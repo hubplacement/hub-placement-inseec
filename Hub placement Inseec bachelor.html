@@ -1,0 +1,2187 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hub Alternance — INSEEC Bachelor</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root {
+  --dk: #0f172a;
+  --bl: #1e3a8a;
+  --lt: #f8fafc;
+  --bg: #f1f5f9;
+  --card: #ffffff;
+  --ln: #e2e8f0;
+  --tx: #0f172a;
+  --mu: #64748b;
+  --gr: #10b981;
+  --ye: #f59e0b;
+  --or: #f97316;
+  --re: #ef4444;
+  --pu: #8b5cf6;
+  --sh: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --sh-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--tx); -webkit-font-smoothing: antialiased; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; border: none; background: none; }
+a { color: inherit; text-decoration: none; }
+
+.app { display: grid; grid-template-columns: 270px 1fr; min-height: 100vh; }
+.side { background: #ffffff; border-right: 1px solid var(--ln); padding: 24px 18px; display: flex; flex-direction: column; gap: 16px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.brand { display: flex; flex-direction: column; gap: 10px; padding-bottom: 18px; border-bottom: 1px solid var(--ln); }
+.brand-badge { background: #002868; color: #ffffff; padding: 8px 12px; border-radius: 8px; font-weight: 800; font-size: 11px; letter-spacing: 0.8px; text-transform: uppercase; width: fit-content; box-shadow: var(--sh); }
+.brand-text h1 { font-size: 18px; font-weight: 800; color: var(--dk); line-height: 1.2; letter-spacing: -0.3px; }
+
+.nav { display: flex; flex-direction: column; gap: 3px; }
+.nav-sec { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--mu); padding: 12px 10px 4px; }
+.nav button { text-align: left; border-radius: 9px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; color: var(--mu); font-size: 13px; font-weight: 600; width: 100%; transition: all 0.15s ease; }
+.nav button:hover { background: var(--lt); color: var(--dk); }
+.nav button.active { background: var(--dk); color: #fff; font-weight: 700; box-shadow: var(--sh); }
+.badge { background: var(--lt); border-radius: 20px; padding: 2px 8px; font-size: 11px; font-weight: 800; color: var(--dk); min-width: 22px; text-align: center; }
+.nav button.active .badge { background: rgba(255,255,255,0.2); color: #fff; }
+
+.main { padding: 36px; min-width: 0; overflow-y: auto; max-height: 100vh; }
+.head { margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+.head h2 { font-size: 26px; font-weight: 800; color: var(--dk); letter-spacing: -0.5px; }
+.head-sub { color: var(--mu); font-size: 13.5px; margin-top: 4px; }
+.ha { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+.btn { border: 1px solid var(--ln); background: #ffffff; border-radius: 9px; padding: 9px 16px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; color: #334155; box-shadow: var(--sh); transition: all 0.15s ease; white-space: nowrap; cursor: pointer; }
+.btn:hover { border-color: #cbd5e1; background: #f8fafc; color: var(--dk); transform: translateY(-1px); }
+.btn.prim { background: var(--dk); border-color: var(--dk); color: #ffffff; }
+.btn.prim:hover { background: var(--bl); border-color: var(--bl); }
+.btn.suc { background: var(--gr); border-color: var(--gr); color: #ffffff; }
+.btn.dan { background: var(--re); border-color: var(--re); color: #ffffff; }
+.btn.sm { font-size: 12px; padding: 6px 12px; border-radius: 7px; }
+
+.card { background: var(--card); border: 1px solid var(--ln); border-radius: 14px; padding: 22px; box-shadow: var(--sh); margin-bottom: 20px; }
+.card h3 { font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--dk); }
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.kpi b { font-size: 28px; font-weight: 800; display: block; color: var(--dk); letter-spacing: -0.5px; }
+.kpi small { font-size: 11px; color: var(--mu); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; display: block; }
+
+.chip { font-size: 11px; font-weight: 700; border-radius: 20px; padding: 4px 10px; display: inline-block; }
+.ch-gr { background: #dcfce7; color: #15803d; }
+.ch-bl { background: #dbeafe; color: #1d4ed8; }
+.ch-ye { background: #fef9c3; color: #a16207; }
+.ch-or { background: #ffedd5; color: #c2410c; }
+.ch-re { background: #fee2e2; color: #b91c1c; }
+.ch-gy { background: #f1f5f9; color: #475569; }
+.ch-pu { background: #f3e8ff; color: #7e22ce; }
+.ch-dk { background: #e2e8f0; color: #0f172a; }
+
+.folder-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; margin-bottom: 20px; }
+.fc { background: var(--card); border: 1px solid var(--ln); border-radius: 14px; padding: 20px; cursor: pointer; box-shadow: var(--sh); transition: all 0.2s ease; display: flex; flex-direction: column; justify-content: space-between; }
+.fc:hover { border-color: var(--bl); box-shadow: var(--sh-lg); transform: translateY(-2px); }
+.fc-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+.fc-ico { font-size: 32px; }
+.fc-name { font-size: 15px; font-weight: 700; color: var(--dk); line-height: 1.35; }
+.fc-rncp { font-size: 11px; font-weight: 700; color: var(--mu); margin-top: 4px; }
+.fc-cnt { font-size: 12px; color: var(--bl); font-weight: 700; margin-top: 14px; background: #eff6ff; padding: 5px 10px; border-radius: 8px; display: inline-block; width: fit-content; }
+
+.filters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; align-items: center; }
+.fi, .fi-sel { border: 1px solid var(--ln); background: #ffffff; border-radius: 9px; padding: 9px 14px; font-size: 13px; color: var(--tx); box-shadow: var(--sh); outline: none; transition: border-color 0.15s ease; }
+.fi:focus, .fi-sel:focus { border-color: var(--bl); }
+.fi { min-width: 220px; }
+.fi-sel { min-width: 150px; }
+
+.lst { display: flex; flex-direction: column; gap: 10px; }
+.row { background: var(--card); border: 1px solid var(--ln); border-radius: 12px; padding: 16px 20px; display: flex; gap: 16px; align-items: center; box-shadow: var(--sh); cursor: pointer; transition: all 0.15s ease; }
+.row:hover { border-color: #cbd5e1; background: #f8fafc; transform: translateX(2px); }
+.row-m { flex: 1; min-width: 0; }
+.rn { font-size: 15px; font-weight: 700; color: var(--dk); }
+.rm { font-size: 12.5px; color: var(--mu); margin-top: 4px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+.modal-wrap { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 300; backdrop-filter: blur(6px); }
+.modal-wrap.open { display: flex; }
+.modal { background: #ffffff; border-radius: 18px; width: 100%; max-width: 1000px; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--ln); box-shadow: var(--sh-lg); }
+.modal-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--ln); padding: 20px 26px; background: #f8fafc; flex-shrink: 0; }
+.modal-head h2 { font-size: 19px; font-weight: 800; color: var(--dk); }
+.modal-body { flex: 1; overflow-y: auto; padding: 26px; display: flex; flex-direction: column; gap: 20px; }
+
+.fgrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.fgroup { display: flex; flex-direction: column; gap: 6px; }
+.fgroup label { font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
+.fgroup input, .fgroup select, .fgroup textarea { border: 1px solid var(--ln); border-radius: 9px; padding: 10px 14px; font-size: 13.5px; background: #ffffff; width: 100%; outline: none; transition: border-color 0.15s ease; }
+.fgroup input:focus, .fgroup select:focus, .fgroup textarea:focus { border-color: var(--bl); }
+
+.pdf-viewer { width: 100%; height: 480px; border: 1px solid var(--ln); border-radius: 12px; background: #525659; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+.drop { border: 2px dashed #cbd5e1; border-radius: 14px; background: #f8fafc; padding: 36px 24px; text-align: center; color: var(--mu); font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.2s ease; }
+.drop:hover { background: #eff6ff; border-color: var(--bl); color: var(--bl); }
+
+.log-item { background: #f8fafc; border: 1px solid var(--ln); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; font-size: 13.5px; }
+.log-d { font-size: 11px; font-weight: 700; color: var(--mu); margin-bottom: 4px; }
+
+.tab-nav { display: flex; gap: 10px; border-bottom: 1px solid var(--ln); margin-bottom: 16px; }
+.tab-btn { padding: 10px 16px; font-weight: 700; font-size: 13px; color: var(--mu); border-bottom: 2px solid transparent; cursor: pointer; }
+.tab-btn.active { color: var(--bl); border-bottom-color: var(--bl); }
+
+.check-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.check-item { display: flex; align-items: center; gap: 6px; background: #f1f5f9; padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.check-item input { cursor: pointer; }
+
+.score-badge { display: inline-flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; padding: 8px 14px; border-radius: 12px; min-width: 65px; text-align: center; }
+.score-high { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+.score-mid { background: #fef9c3; color: #a16207; border: 1px solid #fde047; }
+.score-low { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+
+.block-card { border: 1px solid var(--ln); border-radius: 10px; padding: 14px; margin-bottom: 10px; background-color: #fafafa; }
+.block-card.valid { border-left: 5px solid var(--gr); background-color: #f0fdf4; }
+.block-card.invalid { border-left: 5px solid var(--re); background-color: #fef2f2; }
+
+.login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg); padding: 20px; }
+.login-card { background: #ffffff; border: 1px solid var(--ln); border-radius: 18px; padding: 36px; max-width: 420px; width: 100%; box-shadow: var(--sh-lg); text-align: center; }
+.login-card h2 { margin-top: 14px; font-size: 22px; font-weight: 800; color: var(--dk); }
+.login-card p { font-size: 13px; color: var(--mu); margin-top: 6px; margin-bottom: 24px; }
+.public-wrap { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<div class="modal-wrap" id="modalWrap">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="mTitle">Détails</h2>
+      <button class="btn sm" id="mClose">✕ Fermer</button>
+    </div>
+    <div class="modal-body" id="mBody"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+if(window.pdfjsLib){
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+}
+
+var dbInstance = null;
+function initDB() {
+  return new Promise(function(resolve) {
+    var req = indexedDB.open("HubPlacementPDFStorage", 1);
+    req.onupgradeneeded = function(e) {
+      var db = e.target.result;
+      if (!db.objectStoreNames.contains("pdfs")) {
+        db.createObjectStore("pdfs");
+      }
+    };
+    req.onsuccess = function(e) {
+      dbInstance = e.target.result;
+      resolve();
+    };
+    req.onerror = function() { resolve(); };
+  });
+}
+
+function cleanLegacyTestData(){
+  if(!localStorage.getItem('hubDB_cleaned_v3')){
+    localStorage.removeItem('hubDB');
+    localStorage.setItem('hubDB_cleaned_v3', 'true');
+  }
+}
+
+function savePdfBlob(key, base64Data) {
+  return new Promise(function(resolve) {
+    if (!dbInstance || !key) { resolve(); return; }
+    var tx = dbInstance.transaction("pdfs", "readwrite");
+    tx.objectStore("pdfs").put(base64Data, key);
+    tx.oncomplete = function() { resolve(); };
+    tx.onerror = function() { resolve(); };
+  });
+}
+
+function getPdfBlob(key) {
+  return new Promise(function(resolve) {
+    if (!dbInstance || !key) { resolve(''); return; }
+    var tx = dbInstance.transaction("pdfs", "readonly");
+    var req = tx.objectStore("pdfs").get(key);
+    req.onsuccess = function() { resolve(req.result || ''); };
+    req.onerror = function() { resolve(''); };
+  });
+}
+
+function removePdfBlob(key) {
+  if (!dbInstance || !key) return;
+  var tx = dbInstance.transaction("pdfs", "readwrite");
+  tx.objectStore("pdfs").delete(key);
+}
+
+function downloadTxtFile(filename, text) {
+  var element = document.createElement('a');
+  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+  element.setAttribute('download', filename);
+  element.style.display = 'none';
+  document.body.appendChild(element);
+  element.click();
+  document.body.removeChild(element);
+}
+
+var DEFAULT_RNCP_DATABASE = {
+  "rh": {
+    rncp: "RNCP41797",
+    name: "Chargé des Ressources Humaines",
+    title: "Chargé des Ressources Humaines",
+    blocs: [
+      { id: "BC01", label: "Assurer la conformité des processus RH", details: "Gestion administrative, rédaction de contrats, paie, reporting et People Analytics", keywords: ["paie", "déclaration", "contrat", "rgpd", "juridique", "sirh", "tableau de bord", "reporting", "données"] },
+      { id: "BC02", label: "Recruter et gérer les talents", details: "Sourcing, entretiens, parcours d'intégration (onboarding), fidélisation et GEPP", keywords: ["recrutement", "sourcing", "entretien", "onboarding", "intégration", "talents", "fidélisation", "marque employeur"] },
+      { id: "BC03", label: "Développer les compétences du personnel", details: "Plan de développement des compétences, gestion des formations, OPCO et ingénierie de formation", keywords: ["formation", "compétences", "gepp", "entretiens", "opco", "plan de développement", "coaching"] },
+      { id: "BC04", label: "Dynamiser les relations sociales", details: "Animation des IRP (CSE), dialogue social, qualité de vie au travail (QVT) et gestion des RPS", keywords: ["irp", "cse", "dialogue social", "climat social", "rps", "conflit", "médiation"] }
+    ]
+  },
+  "finance": {
+    rncp: "RNCP39875",
+    name: "Finance d’Entreprise",
+    title: "Responsable en gestion financière",
+    blocs: [
+      { id: "BC01", label: "Participer à la mise en œuvre de la stratégie financière", details: "Analyse financière, prévisionnels, budgets et communication financière", keywords: ["stratégie", "analyse financière", "prévisionnel", "trésorerie", "budget"] },
+      { id: "BC02", label: "Réaliser les travaux comptables et le suivi de trésorerie", details: "Clôtures comptables, suivi du BFR, gestion des flux de trésorerie et relations bancaires", keywords: ["comptabilité", "clôture", "bilan", "compte de résultat", "trésorerie", "liquidités"] },
+      { id: "BC03", label: "Assurer la gestion administrative, juridique et fiscale", details: "Déclarations fiscales (TVA, IS), veille juridique et conformité", keywords: ["fiscalité", "tva", "juridique", "consolidation", "conformité"] },
+      { id: "BC04", label: "Missions de contrôle de gestion", details: "Calcul des coûts, définition des KPI et élaboration des tableaux de bord de gestion", keywords: ["contrôle de gestion", "coûts", "kpi", "tableau de bord", "rentabilité"] }
+    ]
+  },
+  "banque": {
+    rncp: "RNCP39875",
+    name: "Banque & Assurance",
+    title: "Responsable en gestion financière",
+    blocs: [
+      { id: "BC01", label: "Conseil et gestion de portefeuilles clients", details: "Analyse des besoins bancaires/assurance, instruction des crédits et gestion des risques", keywords: ["banque", "assurance", "crédit", "risque", "portefeuille", "épargne", "patrimoine"] },
+      { id: "BC02", label: "Opérations financières et trésorerie", details: "Gestion des produits financiers, placements et gestion des flux", keywords: ["trésorerie", "placements", "flux", "arbitrage", "produits financiers"] },
+      { id: "BC03", label: "Conformité réglementaire bancaire", details: "Respect des normes ACPR, LCB-FT, MIF2 et réglementation assurantielle", keywords: ["conformité", "acpr", "lcb-ft", "mif2", "réglementation", "droit bancaire"] }
+    ]
+  },
+  "intl": {
+    rncp: "RNCP38604",
+    name: "Activités Commerciales à l'International",
+    title: "Responsable des activités commerciales",
+    blocs: [
+      { id: "BC01", label: "Stratégie de développement commercial", details: "Étude de marché export, diagnostic SWOT et réseaux de distribution", keywords: ["export", "import", "international", "étude de marché", "swot", "distribution"] },
+      { id: "BC02", label: "Plan commercial omnicanal", keywords: ["prospection", "fidélisation", "négociation", "parcours client"] },
+      { id: "BC03", label: "Pilotage budgétaire commercial", keywords: ["budget", "rentabilité", "marge", "kpi"] },
+      { id: "BC04", label: "Management d'équipe commerciale", keywords: ["management", "équipe", "objectifs", "animation"] },
+      { id: "BC05", label: "Développement international & douanes", details: "Incoterms, procédures douanières, contrats internationaux et négociation en anglais", keywords: ["international", "export", "import", "douane", "incoterms", "anglais"] }
+    ]
+  },
+  "luxe": {
+    rncp: "RNCP38604",
+    name: "Luxe & Maison de Haute Couture",
+    title: "Responsable des activités commerciales",
+    blocs: [
+      { id: "BC01", label: "Stratégie commerciale sectorielle", keywords: ["veille", "marché du luxe", "positionnement"] },
+      { id: "BC02", label: "Relation client et parcours haut de gamme", keywords: ["expérience client", "fidélisation", "vip"] },
+      { id: "BC03", label: "Pilotage budgétaire commercial", keywords: ["budget", "rentabilité", "kpi"] },
+      { id: "BC04", label: "Management d'équipe de vente Luxe", keywords: ["management", "excellence", "coaching"] },
+      { id: "BC05", label: "Codes et excellence du secteur du Luxe", details: "Storytelling, codes de l'excellence, négociation VIP et ambassade de marque", keywords: ["luxe", "excellence", "vip", "codes du luxe", "ambassadeur"] }
+    ]
+  },
+  "sport": {
+    rncp: "RNCP38604",
+    name: "Sport Business",
+    title: "Responsable des activités commerciales",
+    blocs: [
+      { id: "BC01", label: "Stratégie commerciale Sport Business", details: "Partenariats sportifs, droits TV, billetterie et sponsoring", keywords: ["sport", "sponsor", "sponsoring", "partenariat", "billetterie", "fan experience"] },
+      { id: "BC02", label: "Plan de développement commercial", keywords: ["hospitalités", "événement sportif", "activation", "stade"] },
+      { id: "BC03", label: "Pilotage des budgets commerciaux", keywords: ["budget", "revenus", "merchandising", "marge"] }
+    ]
+  },
+  "startup": {
+    rncp: "RNCP38604",
+    name: "Business Développement & Start-Up",
+    title: "Responsable des activités commerciales",
+    blocs: [
+      { id: "BC01", label: "Stratégie commerciale & Prospection B2B", keywords: ["prospection", "lean startup", "b2b", "vente directe"] },
+      { id: "BC02", label: "Développement des partenariats et levée de fonds", keywords: ["pitch", "croissance", "partenaires", "investisseurs"] }
+    ]
+  },
+  "ia_data": {
+    rncp: "RNCP38605",
+    name: "Marketing Digital — IA & Data",
+    title: "Responsable de projet marketing communication",
+    blocs: [
+      { id: "BC01", label: "Définition de la stratégie marketing", keywords: ["audit marketing", "stratégie", "plan de communication"] },
+      { id: "BC02", label: "Conception et déploiement de projets marketing", keywords: ["gestion de projet", "cahier des charges", "plan média"] },
+      { id: "BC03", label: "Gestion budgétaire et mesure du ROI", keywords: ["budget", "roi", "kpi", "suivi"] },
+      { id: "BC04", label: "Management d'équipe projet", keywords: ["équipe", "planning", "coordination"] },
+      { id: "BC05", label: "Actions Marketing Digital, IA & Analytics", details: "Intégration d'outils IA, analyse de la data client, automation et campagnes d'acquisition web", keywords: ["ia", "intelligence artificielle", "data", "analytics", "crm", "automation"] }
+    ]
+  },
+  "mkt_web": {
+    rncp: "RNCP38605",
+    name: "Marketing Digital — Web Marketing",
+    title: "Responsable de projet marketing communication",
+    blocs: [
+      { id: "BC01", label: "Stratégie d'Acquisition Web", keywords: ["seo", "sea", "sem", "growth marketing", "conversion", "lead"] }
+    ]
+  },
+  "mkt_cm": {
+    rncp: "RNCP38605",
+    name: "Marketing Digital — Community Management & Social Media",
+    title: "Responsable de projet marketing communication",
+    blocs: [
+      { id: "BC01", label: "Gestion des réseaux sociaux et stratégie d'engagement", keywords: ["instagram", "tiktok", "community manager", "social media", "smo", "contenu"] }
+    ]
+  },
+  "produit": {
+    rncp: "RNCP38605",
+    name: "Développement de Produits",
+    title: "Responsable de projet marketing communication",
+    blocs: [
+      { id: "BC01", label: "Stratégie marketing produit", keywords: ["veille", "étude de marché", "audit"] },
+      { id: "BC02", label: "Gestion de projet de développement", keywords: ["cahier des charges", "planning", "roadmap"] },
+      { id: "BC03", label: "Budget et rentabilité produit", keywords: ["budget", "suivi", "marge"] },
+      { id: "BC04", label: "Management d'équipe projet", keywords: ["coordination", "équipe", "agile"] },
+      { id: "BC05", label: "Conception et lancement de nouveaux produits", details: "Packaging, UX, design, positionnement et stratégie de lancement", keywords: ["produit", "concept", "storytelling", "packaging", "design", "ux", "lancement"] }
+    ]
+  },
+  "evenementiel": {
+    rncp: "RNCP38605",
+    name: "Marketing Communication Événementielle",
+    title: "Responsable de projet marketing communication",
+    blocs: [
+      { id: "BC01", label: "Définition de la stratégie de communication", keywords: ["veille", "étude de marché"] },
+      { id: "BC02", label: "Conception et déploiement de projet", keywords: ["plan média", "communication", "réseaux sociaux"] },
+      { id: "BC03", label: "Gestion budgétaire et prestataires", keywords: ["budget", "devis", "prestataires"] },
+      { id: "BC04", label: "Management d'équipe en mode projet", keywords: ["équipe", "coordination", "logistique"] },
+      { id: "BC05", label: "Concevoir et mettre en œuvre un événement", details: "Scénarisation, sécurité, régie technique, logistique et relations presse", keywords: ["événement", "événementiel", "sécurité", "prestataires", "sponsoring", "roadmap", "logistique"] }
+    ]
+  }
+};
+
+function getRncpDatabase() {
+  try {
+    var custom = localStorage.getItem('hub_rncp_database');
+    return custom ? JSON.parse(custom) : DEFAULT_RNCP_DATABASE;
+  } catch(e) {
+    return DEFAULT_RNCP_DATABASE;
+  }
+}
+
+function saveRncpDatabase(dbObj) {
+  localStorage.setItem('hub_rncp_database', JSON.stringify(dbObj));
+}
+
+function getCustomSpecs(){
+  var db = getRncpDatabase();
+  return Object.keys(db).map(function(key){
+    return { key: key, rncp: db[key].rncp, name: db[key].name, title: db[key].title };
+  });
+}
+
+var BASE_STATUSES = ['À valider','Refusé','Actif','Nouveau','En recherche','Candidature envoyée','Entretien en cours','Placé','Peu actif','Inactif','Archivé'];
+var OFFER_STATUSES = ['À traiter','En cours','Traité','Fermée'];
+
+function getApiKey(){ return localStorage.getItem('hub_openai_key') || ''; }
+function setApiKey(k){ localStorage.setItem('hub_openai_key', k); }
+function getCustomStatuses(){ try{ return JSON.parse(localStorage.getItem('hubStatuses')||'null')||BASE_STATUSES; }catch(e){ return BASE_STATUSES; } }
+
+/* Vos identifiants configurés */
+function getAuthCredentials(){
+  return {
+    user: localStorage.getItem('hub_admin_user') || 'hub.alternance',
+    pass: localStorage.getItem('hub_admin_pass') || 'Matching.inseecbachelor'
+  };
+}
+function setAuthCredentials(u, p){
+  if(u) localStorage.setItem('hub_admin_user', u);
+  if(p) localStorage.setItem('hub_admin_pass', p);
+}
+function isSessionAuthenticated(){
+  return sessionStorage.getItem('hub_auth_session') === 'true';
+}
+function setSessionAuth(val){
+  sessionStorage.setItem('hub_auth_session', val ? 'true' : 'false');
+}
+
+function uid(){ return 'id_'+Math.random().toString(36).slice(2)+Date.now().toString(36); }
+
+function nowExactStr(){
+  var d = new Date();
+  var jours = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+  return jours[d.getDay()] + ' ' + d.toLocaleDateString('fr-FR') + ' à ' + d.toLocaleTimeString('fr-FR');
+}
+
+function esc(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function val(id){ var el=document.getElementById(id); return el?el.value.trim():''; }
+
+function statusChip(s){
+  var m={Placé:'ch-gr',Archivé:'ch-gy','Candidature envoyée':'ch-ye','Entretien en cours':'ch-pu','En recherche':'ch-bl','À valider':'ch-or',Refusé:'ch-re',Nouveau:'ch-dk',Actif:'ch-bl','Peu actif':'ch-ye',Inactif:'ch-re','À traiter':'ch-or','En cours':'ch-ye','Traité':'ch-gr','Fermée':'ch-re'};
+  return '<span class="chip '+(m[s]||'ch-dk')+'">'+esc(s||'À valider')+'</span>';
+}
+
+function fileToBase64(file){
+  return new Promise(function(res){
+    var r=new FileReader();
+    r.onload=function(){res(r.result);};
+    r.onerror=function(){res('');};
+    r.readAsDataURL(file);
+  });
+}
+
+function extractPdfText(file){
+  return new Promise(function(resolve){
+    if(!window.pdfjsLib){ resolve(''); return; }
+    var reader = new FileReader();
+    reader.onload = function(){
+      var task = pdfjsLib.getDocument({data: new Uint8Array(reader.result)});
+      task.promise.then(function(pdf){
+        var pages = [], count = pdf.numPages;
+        var p = Promise.resolve();
+        for(var i=1; i<=count; i++){
+          p = (function(pageNo){
+            return p.then(function(){
+              return pdf.getPage(pageNo).then(function(pg){
+                return pg.getTextContent();
+              }).then(function(tc){
+                pages.push(tc.items.map(function(it){ return it.str; }).join(' '));
+              });
+            });
+          })(i);
+        }
+        p.then(function(){ resolve(pages.join('\n')); }).catch(function(){ resolve(''); });
+      }).catch(function(){ resolve(''); });
+    };
+    reader.onerror = function(){ resolve(''); };
+    reader.readAsBuffer ? reader.readAsBuffer(file) : reader.readAsArrayBuffer(file);
+  });
+}
+
+function parseCVWithAI(pdfText, fileName){
+  var apiKey = getApiKey();
+  var specsList = getCustomSpecs().map(function(s){ return s.name; }).join(', ');
+
+  if(!apiKey){
+    var cleanName = fileName.replace(/\.[^/.]+$/, "").replace(/CV[_\s-]*/i, "").trim();
+    var parts = cleanName.split(/[_\s-]+/);
+    var emailMatch = pdfText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+    var phoneMatch = pdfText.match(/(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}/);
+    return Promise.resolve({
+      firstName: parts[0] || 'Candidat',
+      lastName: parts.slice(1).join(' ') || 'Importé',
+      email: emailMatch ? emailMatch[0] : '',
+      phone: phoneMatch ? phoneMatch[0] : '',
+      specialite: 'Finance d’Entreprise',
+      skills: pdfText ? pdfText.slice(0, 250) : ''
+    });
+  }
+
+  var prompt = "Tu es un assistant RH d'élite pour INSEEC Bachelor. Extrais avec une précision absolue les données de ce CV :\n\n" +
+                "TEXTE DU CV :\n" + pdfText + "\n\n" +
+                "Liste des Spécialités valides : " + specsList + ".\n\n" +
+                "Format JSON strictement obligatoire :\n" +
+                "{\n" +
+                "  \"firstName\": \"Prénom de l'étudiant\",\n" +
+                "  \"lastName\": \"Nom de famille\",\n" +
+                "  \"email\": \"adresse email si trouvée\",\n" +
+                "  \"phone\": \"numéro de téléphone si trouvé\",\n" +
+                "  \"specialite\": \"Choisis la spécialité la plus pertinente parmi la liste ci-dessus\",\n" +
+                "  \"skills\": \"Synthèse des 5 à 8 compétences clés, outils maîtrisés et logiciels\"\n" +
+                "}";
+
+  return fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      max_tokens: 2000,
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" }
+    })
+  }).then(function(r){ return r.json(); }).then(function(d){ return JSON.parse(d.choices[0].message.content); }).catch(function(){
+    return { firstName: 'Candidat', lastName: 'Importé', email: '', phone: '', specialite: 'Finance d’Entreprise', skills: '' };
+  });
+}
+
+function callAIDeepAuditCV(studentText, reasonText){
+  var apiKey = getApiKey();
+  if(!apiKey) return Promise.resolve({ internalAnalysis: "Diagnostic IA indisponible (Absence de clé API)", studentEmail: "Bonjour,\n\nMerci de revoir votre CV et de le mettre à jour." });
+
+  var prompt = "Tu es le Directeur du Bureau des Carrières INSEEC Bachelor. Effectue une analyse RH de très haut niveau sur ce CV.\n\n" +
+                 "CONSIGNES ULTRA-STRICTES ET DÉVELOPPÉES :\n" +
+                 "1. Développe en détail chaque point. Ne te contente pas de phrases courtes.\n" +
+                 "2. Analyse la lisibilité ATS, l'impact des verbes d'action, la hiérarchie visuelle et l'adéquation au marché du travail.\n" +
+                 "3. Le mail envoyé à l'étudiant doit être HYPER DÉVELOPPÉ, extrêmement constructif, chaleureux mais direct, structuré étape par étape (Titre, Accroche, Verbes d'action, Mots-clés ATS manquants, Projets, Mise en page).\n\n" +
+                 "CV DE L'ÉTUDIANT :\n" + studentText + "\n\n" +
+                 "INSTRUCTIONS DE L'ADMINISTRATION :\n" + (reasonText || "Mise en conformité et optimisation d'impact") + "\n\n" +
+                 "Format JSON obligatoire :\n" +
+                 "{\n" +
+                 "  \"internalAnalysis\": \"[ANALYSE RH INTERNE DÉTAILLÉE SUR PLUSIEURS PARAGRAPHES]\\n- Audit de structure et parsing ATS\\n- Évaluation fine des verbes d'action et éléments chiffrés\\n- Analyse des mots-clés sectoriels manquants\\n- Recommandations d'accompagnement par le Bureau des Carrières...\",\n" +
+                 "  \"studentEmail\": \"Bonjour [Prénom],\\n\\nLe Bureau des Carrières INSEEC Bachelor a étudié avec une attention particulière votre CV. Afin de maximiser vos chances auprès de nos entreprises partenaires, des ajustements majeurs sont nécessaires avant validation finale.\\n\\nVoici votre feuille de route détaillée :\\n\\n1. TITRE ET ACCROCHE STRATÉGIQUE :\\n...\\n\\n2. REFORMULATION DES EXPÉRIENCES (Impact, Chiffres et Verbes d'Action) :\\n...\\n\\n3. MOTS-CLÉS TECHNIQUES ET OUTILS ENSEIGNÉS À L'INSEEC :\\n...\\n\\n4. STRUCTURE ET OPTIMISATION POUR LES LOGICIELS ATS :\\n...\\n\\nMerci de nous renvoyer votre CV mis à jour d'ici 48h.\\n\\nBien cordialement,\\nLe Bureau des Carrières INSEEC Bachelor\"\n" +
+                 "}";
+
+  return fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      max_tokens: 4000,
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" }
+    })
+  }).then(function(r){ return r.json(); }).then(function(d){ return JSON.parse(d.choices[0].message.content); }).catch(function(){
+    return { internalAnalysis: "Erreur d'analyse OpenAI", studentEmail: "Veuillez mettre votre CV à jour." };
+  });
+}
+
+function callAIOptimizeCVFull(studentText, offerText){
+  var apiKey = getApiKey();
+  if(!apiKey) return Promise.reject("Clé API absente.");
+
+  var prompt = "Tu es un expert en ingénierie de CV ATS. Classe impérativement toutes les expériences et formations en CHRONOLOGIE INVERSE STRICTE.\n\n" +
+                 "CV TEXTE :\n" + studentText + "\n\n" +
+                 "OFFRE CIBLÉE :\n" + (offerText || "Business Development / Management") + "\n\n" +
+                 "JSON Format :\n" +
+                 "{\n" +
+                 "  \"fullName\": \"Prénom NOM\",\n" +
+                 "  \"contact\": \"Téléphone | Email | Ville\",\n" +
+                 "  \"title\": \"TITRE DU POSTE\",\n" +
+                 "  \"summary\": \"Accroche synthétique de 3 lignes\",\n" +
+                 "  \"hardSkills\": [\"Savoir-faire 1\", \"Savoir-faire 2\"],\n" +
+                 "  \"softSkills\": [\"Qualité 1\", \"Qualité 2\"],\n" +
+                 "  \"languages\": \"Français (maternelle), Anglais (B2)...\",\n" +
+                 "  \"experiences\": [{\"role\": \"Intitulé\", \"company\": \"Entreprise\", \"period\": \"Dates\", \"details\": [\"Mission 1\", \"Mission 2\"]}]\n," +
+                 "  \"education\": [{\"degree\": \"Diplôme\", \"school\": \"École\", \"period\": \"Dates\"}]\n" +
+                 "}";
+
+  return fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      max_tokens: 4000,
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" }
+    })
+  }).then(function(r){ return r.json(); }).then(function(d){ return JSON.parse(d.choices[0].message.content); });
+}
+
+function callAIMatchingDetailed(studentText, offerText){
+  var apiKey = getApiKey();
+  if(!apiKey) return Promise.resolve({ score: 65, positives: ["Spécialité conforme"], negatives: ["Clé API absente pour audit fin"], verdict: "Analyse automatique de correspondance standard." });
+
+  var prompt = "Tu es un DRH d'entreprise et un Expert Recrutement pour l'INSEEC. Évalue avec une rigueur absolue et un très haut niveau de détail l'adéquation entre ce candidat et l'offre d'emploi.\n\n" +
+                 "CV CANDIDAT :\n" + studentText + "\n\n" +
+                 "OFFRE D'EMPLOI :\n" + offerText + "\n\n" +
+                 "Format JSON obligatoire :\n" +
+                 "{\n" +
+                 "  \"score\": 85,\n" +
+                 "  \"positives\": [\"Point fort détaillé 1\", \"Point fort détaillé 2\", \"Point fort détaillé 3\"],\n" +
+                 "  \"negatives\": [\"Point de vigilance détaillé 1\", \"Axe d'amélioration ou manque identifié\"],\n" +
+                 "  \"verdict\": \"Synthèse RH très complète, argumentée et détaillée sur le potentiel du candidat pour ce poste spécifique.\"\n" +
+                 "}";
+
+  return fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      max_tokens: 3000,
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" }
+    })
+  }).then(function(r){ return r.json(); }).then(function(d){ return JSON.parse(d.choices[0].message.content); }).catch(function(){
+    return { score: 50, positives: ["Profil analysé"], negatives: ["Erreur de traitement IA"], verdict: "Incomplet." };
+  });
+}
+
+function localDB(){
+  try{
+    var raw = localStorage.getItem('hubDB');
+    if(!raw) return {students:[],offers:[],companies:[]};
+    return JSON.parse(raw);
+  } catch(e){
+    return {students:[],offers:[],companies:[]};
+  }
+}
+
+function saveDB(db){
+  localStorage.setItem('hubDB', JSON.stringify(db));
+}
+
+function apiGet(action){
+  var db=localDB();
+  if(action==='listStudents') return Promise.resolve(db.students||[]);
+  if(action==='listOffers') return Promise.resolve(db.offers||[]);
+  if(action==='listCompanies') return Promise.resolve(db.companies||[]);
+  return Promise.resolve(null);
+}
+
+function apiPost(action,data){
+  var db=localDB();
+  db.students = db.students || [];
+  db.offers = db.offers || [];
+  db.companies = db.companies || [];
+
+  if(action==='saveStudent'){
+    var stIdx = -1;
+    for(var i=0; i<db.students.length; i++){ if(db.students[i].id === data.id){ stIdx = i; break; } }
+    if(stIdx !== -1) db.students[stIdx] = Object.assign({}, db.students[stIdx], data);
+    else db.students.push(data);
+    saveDB(db); return Promise.resolve({ok:true});
+  }
+  if(action==='saveOffer'){
+    var ofIdx = -1;
+    for(var j=0; j<db.offers.length; j++){ if(db.offers[j].id === data.id){ ofIdx = j; break; } }
+    if(ofIdx !== -1) db.offers[ofIdx] = Object.assign({}, db.offers[ofIdx], data);
+    else db.offers.push(data);
+    saveDB(db); return Promise.resolve({ok:true});
+  }
+  if(action==='saveCompany'){
+    var cpIdx = -1;
+    for(var k=0; k<db.companies.length; k++){ if(db.companies[k].id === data.id){ cpIdx = k; break; } }
+    if(cpIdx !== -1) db.companies[cpIdx] = Object.assign({}, db.companies[cpIdx], data);
+    else db.companies.push(data);
+    saveDB(db); return Promise.resolve({ok:true});
+  }
+  if(action==='deleteStudent'){
+    db.students = db.students.filter(function(s){return s.id!==data.id;});
+    saveDB(db); return Promise.resolve({ok:true});
+  }
+  if(action==='deleteOffer'){
+    db.offers = db.offers.filter(function(o){return o.id!==data.id;});
+    saveDB(db); return Promise.resolve({ok:true});
+  }
+  if(action==='deleteCompany'){
+    db.companies = db.companies.filter(function(c){return c.id!==data.id;});
+    saveDB(db); return Promise.resolve({ok:true});
+  }
+  if(action==='purgeStudents'){
+    db.students = []; saveDB(db); return Promise.resolve({ok:true});
+  }
+  if(action==='validateStudent'){
+    var stv = db.students.find(function(s){return s.id===data.id;});
+    if(stv){
+      stv.status = 'Actif';
+      stv.history = stv.history || [];
+      stv.history.unshift({ date: nowExactStr(), action: 'Profil validé par le Bureau des Carrières' });
+    }
+    saveDB(db); return Promise.resolve({ok:true});
+  }
+  if(action==='rejectStudent'){
+    var str = db.students.find(function(s){return s.id===data.id;});
+    if(str){
+      str.status = 'Refusé';
+      str.history = str.history || [];
+      str.history.unshift({ date: nowExactStr(), action: 'CV Refusé - Motif : ' + (data.reason||'Mise à jour requise') });
+    }
+    saveDB(db); return Promise.resolve({ok:true});
+  }
+  return Promise.resolve({ok:true});
+}
+
+var mWrap=document.getElementById('modalWrap');
+var mTitle=document.getElementById('mTitle');
+var mBody=document.getElementById('mBody');
+document.getElementById('mClose').addEventListener('click',function(){mWrap.classList.remove('open');});
+
+function openModal(title, htmlContent){
+  mTitle.textContent=title;
+  mBody.innerHTML=htmlContent;
+  mWrap.classList.add('open');
+}
+
+cleanLegacyTestData();
+initDB().then(function() {
+  var params = new URLSearchParams(window.location.search);
+  var view = params.get('public_view');
+  
+  if (view === 'candidat') {
+    renderPublicStudentForm();
+  } else if (view === 'entreprise') {
+    renderPublicCompanyForm();
+  } else {
+    if (!isSessionAuthenticated()) {
+      renderLoginScreen();
+    } else {
+      renderAdmin();
+    }
+  }
+});
+
+function renderPublicStudentForm(){
+  var specs = getCustomSpecs();
+  var ROOT = document.getElementById('root');
+  ROOT.innerHTML = 
+    '<div class="public-wrap">'+
+      '<div class="card">'+
+        '<div class="brand-badge" style="margin-bottom:12px;">INSEEC Bachelor</div>'+
+        '<h2>Espace Dépôt de Candidature</h2>'+
+        '<p class="head-sub" style="margin-bottom:20px;">Transmettez votre CV pour intégrer le Hub Alternance.</p>'+
+        '<div class="fgrid">'+
+          '<div class="fgroup"><label>Prénom *</label><input id="pub_fn"></div>'+
+          '<div class="fgroup"><label>Nom *</label><input id="pub_ln"></div>'+
+          '<div class="fgroup"><label>Email *</label><input id="pub_em"></div>'+
+          '<div class="fgroup"><label>Téléphone *</label><input id="pub_ph"></div>'+
+          '<div class="fgroup full" style="grid-column: span 2;"><label>Spécialité *</label><select id="pub_sp">'+specs.map(function(s){return '<option>'+s.name+'</option>';}).join('')+'</select></div>'+
+          '<div class="fgroup full" style="grid-column: span 2;"><label>Votre CV (PDF) *</label><input type="file" id="pub_cv" accept="application/pdf"></div>'+
+        '</div>'+
+        '<button class="btn prim" id="pub_btn" style="margin-top:20px;width:100%;justify-content:center;">Soumettre ma candidature</button>'+
+        '<div id="pub_status" style="margin-top:14px;font-weight:700;color:var(--bl);text-align:center;"></div>'+
+      '</div>'+
+    '</div>';
+
+  document.getElementById('pub_btn').addEventListener('click', async function(){
+    var fn = val('pub_fn'), ln = val('pub_ln'), em = val('pub_em'), ph = val('pub_ph'), sp = val('pub_sp');
+    var fileIn = document.getElementById('pub_cv').files[0];
+    var statusEl = document.getElementById('pub_status');
+
+    if(!fn || !ln || !em || !fileIn){ alert('Veuillez remplir les champs obligatoires et joindre un CV.'); return; }
+
+    statusEl.textContent = 'Envoi et analyse de votre dossier en cours...';
+    var stId = uid();
+    var b64 = await fileToBase64(fileIn);
+    await savePdfBlob(stId + '_cv1', b64);
+    var txt = await extractPdfText(fileIn);
+
+    var newStudent = {
+      id: stId,
+      firstName: fn,
+      lastName: ln,
+      email: em,
+      phone: ph,
+      specialite: sp,
+      skills: txt ? txt.slice(0, 300) : '',
+      status: 'À valider',
+      hasPdf: true,
+      activeCv: 'cv1',
+      rawText: txt,
+      sentOffers: [],
+      history: [{ date: nowExactStr(), action: 'Dépôt public du CV par le candidat' }]
+    };
+
+    await apiPost('saveStudent', newStudent);
+    statusEl.style.color = 'var(--gr)';
+    statusEl.textContent = 'Votre CV a été transmis avec succès au Bureau des Carrières !';
+  });
+}
+
+function renderPublicCompanyForm(){
+  var ROOT = document.getElementById('root');
+  ROOT.innerHTML = 
+    '<div class="public-wrap">'+
+      '<div class="card">'+
+        '<div class="brand-badge" style="margin-bottom:12px;">INSEEC Bachelor</div>'+
+        '<h2>Dépôt d\'Offre d\'Alternance</h2>'+
+        '<p class="head-sub" style="margin-bottom:20px;">Proposez votre offre à nos étudiants qualifiés.</p>'+
+        '<div class="fgrid">'+
+          '<div class="fgroup"><label>Intitulé du poste *</label><input id="pub_ti"></div>'+
+          '<div class="fgroup"><label>Nom de l\'entreprise *</label><input id="pub_co"></div>'+
+          '<div class="fgroup"><label>Nom du Contact *</label><input id="pub_cn"></div>'+
+          '<div class="fgroup"><label>Email de contact *</label><input id="pub_cem"></div>'+
+          '<div class="fgroup"><label>Téléphone *</label><input id="pub_cph"></div>'+
+          '<div class="fgroup full" style="grid-column: span 2;"><label>Fiche de poste (PDF) *</label><input type="file" id="pub_pdf" accept="application/pdf"></div>'+
+        '</div>'+
+        '<button class="btn prim" id="pub_btn_off" style="margin-top:20px;width:100%;justify-content:center;">Déposer l\'offre</button>'+
+        '<div id="pub_off_status" style="margin-top:14px;font-weight:700;color:var(--bl);text-align:center;"></div>'+
+      '</div>'+
+    '</div>';
+
+  document.getElementById('pub_btn_off').addEventListener('click', async function(){
+    var ti = val('pub_ti'), co = val('pub_co'), cn = val('pub_cn'), em = val('pub_cem'), ph = val('pub_cph');
+    var fileIn = document.getElementById('pub_pdf').files[0];
+    var statusEl = document.getElementById('pub_off_status');
+
+    if(!ti || !co || !em || !fileIn){ alert('Veuillez remplir les champs obligatoires.'); return; }
+
+    statusEl.textContent = 'Transmission de votre offre...';
+    var offId = uid();
+    var b64 = await fileToBase64(fileIn);
+    await savePdfBlob(offId, b64);
+    var txt = await extractPdfText(fileIn);
+
+    var newOffer = {
+      id: offId,
+      title: ti,
+      companyName: co,
+      contactName: cn,
+      contactEmail: em,
+      contactPhone: ph,
+      status: 'À traiter',
+      rawText: txt
+    };
+
+    await apiPost('saveOffer', newOffer);
+    await apiPost('saveCompany', { id: uid(), companyName: co, contactName: cn, email: em, phone: ph });
+    statusEl.style.color = 'var(--gr)';
+    statusEl.textContent = 'Votre offre a été enregistrée avec succès. Notre équipe va procéder au matching !';
+  });
+}
+
+function renderLoginScreen(){
+  var ROOT = document.getElementById('root');
+  ROOT.innerHTML = 
+    '<div class="login-wrap">'+
+      '<div class="login-card">'+
+        '<div class="brand-badge" style="margin:0 auto 12px;">INSEEC Bachelor</div>'+
+        '<h2>Hub Alternance</h2>'+
+        '<p>Espace d\'administration sécurisé</p>'+
+        '<div class="fgroup" style="text-align:left;margin-bottom:12px;">'+
+          '<label>Identifiant</label><input type="text" id="log_u">'+
+        '</div>'+
+        '<div class="fgroup" style="text-align:left;margin-bottom:20px;">'+
+          '<label>Mot de passe</label><input type="password" id="log_p">'+
+        '</div>'+
+        '<button class="btn prim" id="btn_login" style="width:100%;justify-content:center;">Se connecter</button>'+
+        '<div id="login_err" style="color:var(--re);font-size:12px;margin-top:12px;font-weight:700;"></div>'+
+      '</div>'+
+    '</div>';
+
+  document.getElementById('btn_login').addEventListener('click', function(){
+    var creds = getAuthCredentials();
+    var u = val('log_u'), p = val('log_p');
+    if(u === creds.user && p === creds.pass){
+      setSessionAuth(true);
+      renderAdmin();
+    } else {
+      document.getElementById('login_err').textContent = 'Identifiant ou mot de passe incorrect.';
+    }
+  });
+}
+
+function renderAdmin(){
+  var STATE={
+    students:[],offers:[],companies:[],
+    tab:'dashboard',loading:true,
+    folderStudents:{mode:'root',spec:'',status:''},
+    offerFilter:{search:'',status:'À traiter',specialite:''},
+    studentFilter:{search:'',status:'',specialite:'',promo:''}
+  };
+
+  function refreshAll(){
+    return Promise.all([apiGet('listStudents'),apiGet('listOffers'),apiGet('listCompanies')])
+      .then(function(r){
+        STATE.students=r[0]||[];STATE.offers=r[1]||[];STATE.companies=r[2]||[];
+        STATE.loading=false;
+      });
+  }
+
+  var NAV=[
+    {s:'GESTION',items:[
+      {id:'dashboard',label:'Tableau de bord',icon:'📊'},
+      {id:'import_cv',label:'Import CVs',icon:'📥'},
+      {id:'validation',label:'À valider',icon:'✅',count:function(){return STATE.students.filter(function(s){return s.status==='À valider';}).length;}},
+      {id:'offers',label:'Offres d\'emploi',icon:'🏢',count:function(){return STATE.offers.filter(function(o){return o.status==='À traiter';}).length;}},
+      {id:'companies',label:'Entreprises & Contacts',icon:'📇'}
+    ]},
+    {s:'ÉTUDIANTS',items:[
+      {id:'student_folders',label:'Dossiers Filières',icon:'📁'},
+      {id:'all_students',label:'Tous les étudiants',icon:'🎓'}
+    ]},
+    {s:'OUTILS IA & RNCP',items:[
+      {id:'rncp_analyzer',label:'Analyseur d\'Éligibilité RNCP',icon:'⚖️'},
+      {id:'cv_analyzer',label:'Optimisation ATS & Analyse',icon:'📝'},
+      {id:'matching',label:'Matching de candidatures',icon:'🤖'},
+      {id:'archives',label:'Archives & Promos',icon:'🗄'}
+    ]},
+    {s:'CONFIG & RGPD',items:[
+      {id:'settings',label:'Clé API & Options',icon:'⚙️'},
+      {id:'rgpd',label:'RGPD & Purges',icon:'🔒'},
+      {id:'links',label:'Liens publics d\'import',icon:'🔗'}
+    ]}
+  ];
+
+  function shell(){
+    var ROOT=document.getElementById('root');
+    ROOT.innerHTML=
+      '<div class="app">'+
+        '<div class="side">'+
+          '<div class="brand">'+
+            '<div class="brand-badge">INSEEC Bachelor</div>'+
+            '<div class="brand-text"><h1>Hub Alternance</h1></div>'+
+          '</div>'+
+          '<div class="nav" id="nav">'+
+            NAV.map(function(sec){
+              return '<div class="nav-sec">'+sec.s+'</div>'+
+                sec.items.map(function(n){
+                  var cnt=n.count?n.count():0;
+                  return '<button data-tab="'+n.id+'" class="'+(STATE.tab===n.id?'active':'')+'">'
+                    +'<span class="nav-icon">'+n.icon+'</span>'
+                    +'<span style="flex:1;">'+n.label+'</span>'
+                    +(cnt?'<span class="badge">'+cnt+'</span>':'')
+                    +'</button>';
+                }).join('');
+            }).join('')+
+            '<button id="btn_logout" style="margin-top:20px;color:var(--re); font-weight:700;">🚪 Déconnexion</button>'+
+          '</div>'+
+        '</div>'+
+        '<div class="main" id="main"></div>'+
+      '</div>';
+
+    document.getElementById('nav').addEventListener('click',function(e){
+      var b=e.target.closest('[data-tab]');if(!b)return;
+      STATE.tab=b.getAttribute('data-tab');
+      shell();
+    });
+
+    document.getElementById('btn_logout').addEventListener('click', function(){
+      setSessionAuth(false);
+      renderLoginScreen();
+    });
+
+    renderTab();
+  }
+
+  function renderTab(){
+    var main=document.getElementById('main');
+    if(STATE.loading){main.innerHTML='<p style="padding:20px;">Chargement...</p>';return;}
+    if(STATE.tab==='dashboard') rDashboard(main);
+    else if(STATE.tab==='import_cv') rImportCV(main);
+    else if(STATE.tab==='validation') rValidation(main);
+    else if(STATE.tab==='offers') rOffers(main);
+    else if(STATE.tab==='companies') rCompanies(main);
+    else if(STATE.tab==='student_folders') rStudentFolders(main);
+    else if(STATE.tab==='all_students') rAllStudents(main);
+    else if(STATE.tab==='rncp_analyzer') rRncpAnalyzer(main);
+    else if(STATE.tab==='cv_analyzer') rCvAnalyzer(main);
+    else if(STATE.tab==='matching') rMatching(main);
+    else if(STATE.tab==='archives') rArchives(main);
+    else if(STATE.tab==='settings') rSettings(main);
+    else if(STATE.tab==='rgpd') rRGPD(main);
+    else if(STATE.tab==='links') rLinks(main);
+  }
+
+  function rDashboard(main){
+    main.innerHTML='<h2>Tableau de bord</h2><p class="head-sub">Synthèse de l\'activité du Hub Alternance</p><div class="card" style="margin-top:16px;">'
+      +'<div class="kpis">'
+      +'<div class="card kpi"><b>'+STATE.students.length+'</b><small>Étudiants</small></div>'
+      +'<div class="card kpi"><b>'+STATE.offers.length+'</b><small>Offres enregistrées</small></div>'
+      +'<div class="card kpi"><b>'+STATE.offers.filter(function(o){return o.status==='À traiter';}).length+'</b><small>Offres à traiter</small></div>'
+      +'<div class="card kpi"><b>'+STATE.students.filter(function(s){return s.status==='Placé';}).length+'</b><small>Placés</small></div>'
+      +'</div></div>';
+  }
+
+  function rImportCV(main){
+    main.innerHTML=
+      '<div class="head"><h2>Importation de CVs</h2><p class="head-sub">Analyse intelligente par IA et placement automatique dans "À valider".</p></div>'+
+      '<div class="card">'+
+        '<h3>Dépôt de fichiers PDF / CV</h3>'+
+        '<div class="drop" id="cvDropZone">Glissez-déposez les fichiers PDF ici ou cliquez pour parcourir</div>'+
+        '<input type="file" id="cvFileInput" accept="application/pdf" multiple style="display:none;">'+
+        '<div id="cvImportStatus" style="margin-top:12px;font-weight:700;color:var(--pu);"></div>'+
+      '</div>';
+
+    var drop=document.getElementById('cvDropZone'), fileIn=document.getElementById('cvFileInput');
+    drop.addEventListener('click',function(){ fileIn.click(); });
+    fileIn.addEventListener('change',function(){ handleBatchCVs(fileIn.files); });
+
+    async function handleBatchCVs(filesList){
+      var statusEl=document.getElementById('cvImportStatus');
+      var files = Array.from(filesList);
+      if(!files.length) return;
+
+      var total = files.length;
+
+      for(var i=0; i<total; i++){
+        var file = files[i];
+        statusEl.textContent = 'Extraction IA & Remplissage (' + (i + 1) + '/' + total + ') : ' + file.name + '...';
+
+        var stId = uid();
+        try {
+          var b64 = await fileToBase64(file);
+          await savePdfBlob(stId + '_cv1', b64);
+          var txt = await extractPdfText(file);
+
+          var parsed = await parseCVWithAI(txt, file.name);
+
+          var newStudent = {
+            id: stId,
+            firstName: parsed.firstName || 'Candidat',
+            lastName: parsed.lastName || 'Importé',
+            email: parsed.email || '',
+            phone: parsed.phone || '',
+            specialite: parsed.specialite || 'Finance d’Entreprise',
+            skills: parsed.skills || (txt ? txt.slice(0, 300) : ''),
+            status: 'À valider',
+            hasPdf: true,
+            activeCv: 'cv1',
+            rawText: txt,
+            sentOffers: [],
+            history: [{ date: nowExactStr(), action: 'Importation et extraction intelligente du CV (' + file.name + ')' }]
+          };
+
+          await apiPost('saveStudent', newStudent);
+        } catch(e) {
+          console.error("Erreur d'import : " + file.name, e);
+        }
+      }
+
+      statusEl.textContent = 'Importation et extraction terminées ! Redirection vers la liste à valider...';
+      await refreshAll();
+      STATE.tab = 'validation';
+      shell();
+    }
+  }
+
+  function rValidation(main){
+    var pending=STATE.students.filter(function(s){return s.status==='À valider';});
+    main.innerHTML=
+      '<div class="head"><h2>Profils à valider ('+pending.length+')</h2></div>'+
+      (pending.length===0?'<div class="card">Aucun profil en attente.</div>':
+      '<div class="lst">'+pending.map(function(s){
+        return '<div class="row" data-openst="'+esc(s.id)+'"><div class="row-m">'+
+          '<div class="rn">'+esc(s.firstName)+' '+esc(s.lastName)+'</div>'+
+          '<div class="rm">✉️ '+(esc(s.email)||'Email N/C')+' · 📞 '+(esc(s.phone)||'Tél N/C')+' · Spécialité : <b>'+esc(s.specialite||'N/C')+'</b></div>'+
+        '</div>'+
+        '<div class="ha">'+
+          '<button class="btn dan sm" data-rej="'+esc(s.id)+'">Refuser & Envoyer Mail</button>'+
+          '<button class="btn suc sm" data-vld="'+esc(s.id)+'">Valider</button>'+
+        '</div>'+
+        '</div>';
+      }).join('')+'</div>');
+
+    Array.prototype.forEach.call(document.querySelectorAll('[data-openst]'),function(r){
+      r.addEventListener('click',function(e){
+        if(e.target.hasAttribute('data-vld') || e.target.hasAttribute('data-rej')) return;
+        var st=STATE.students.filter(function(x){return x.id===r.getAttribute('data-openst');})[0];
+        if(st) openStudentModal(st);
+      });
+    });
+
+    Array.prototype.forEach.call(document.querySelectorAll('[data-vld]'),function(b){
+      b.addEventListener('click',function(e){
+        e.stopPropagation();
+        var id=b.getAttribute('data-vld');
+        apiPost('validateStudent',{id:id}).then(function(){ refreshAll().then(shell); });
+      });
+    });
+
+    Array.prototype.forEach.call(document.querySelectorAll('[data-rej]'),function(b){
+      b.addEventListener('click',function(e){
+        e.stopPropagation();
+        var id=b.getAttribute('data-rej');
+        var st=STATE.students.filter(function(x){return x.id===id;})[0];
+        if(st) openRejectModal(st);
+      });
+    });
+  }
+
+  function openRejectModal(st){
+    var html = 
+      '<div class="card">'+
+        '<h3>1. Remarques administratives particulières</h3>'+
+        '<textarea id="rejReasonInput" placeholder="Ajustements spécifiques (ex: corriger le titre, expliciter les missions de stage)..." style="width:100%;height:80px;border:1px solid var(--ln);border-radius:9px;padding:10px;outline:none;"></textarea>'+
+        '<button class="btn prim sm" id="btnGenRejectMsg" style="margin-top:10px;">Lancer l\'Analyse Approfondie & Générer le Mail (Double Puissance IA)</button>'+
+      '</div>'+
+      '<div id="rejectResultArea" style="display:none;">'+
+        '<div class="card" style="background:#f8fafc;border:1px solid var(--bl);">'+
+          '<h3 style="color:var(--bl);">📊 Analyse RH Interne de l\'IA (Audit Complet)</h3>'+
+          '<textarea id="rejInternalAnalysis" style="width:100%;height:220px;border:1px solid var(--ln);border-radius:9px;padding:12px;font-size:13px;outline:none;line-height:1.5;background:#ffffff;"></textarea>'+
+        '</div>'+
+        '<div class="card">'+
+          '<h3>✉️ Mail Constructif & Ultra-Développé pour l\'Étudiant</h3>'+
+          '<textarea id="rejMsgText" style="width:100%;height:320px;border:1px solid var(--ln);border-radius:9px;padding:12px;font-size:13px;outline:none;line-height:1.5;"></textarea>'+
+          '<div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">'+
+            '<button class="btn sm prim" id="btnSendRejectEmail">✉️ Envoyer par Mail (Consigne dans l\'Historique)</button>'+
+            '<button class="btn sm" id="btnDlRejectMsg">Exporter le Mail (.txt)</button>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+      '<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">'+
+        '<button class="btn dan sm" id="btnConfirmReject">Confirmer le statut Refusé</button>'+
+      '</div>';
+
+    openModal('Analyse & Refus de CV : ' + st.firstName + ' ' + st.lastName, html);
+
+    document.getElementById('btnGenRejectMsg').addEventListener('click', function(){
+      var reason = val('rejReasonInput');
+      
+      this.textContent = 'Génération de l\'analyse RH approfondie...';
+      callAIDeepAuditCV(st.rawText || (st.firstName + ' ' + st.lastName + ' ' + st.skills), reason)
+        .then(function(resObj){
+          document.getElementById('rejectResultArea').style.display = 'block';
+          document.getElementById('rejInternalAnalysis').value = resObj.internalAnalysis || '';
+          document.getElementById('rejMsgText').value = resObj.studentEmail || '';
+        }).finally(function(){
+          document.getElementById('btnGenRejectMsg').textContent = 'Régénérer l\'analyse et le mail';
+        });
+    });
+
+    document.getElementById('btnSendRejectEmail').addEventListener('click', function(){
+      var msg = val('rejMsgText');
+      if(!st.email){ alert("L'étudiant n'a pas d'adresse e-mail renseignée."); return; }
+      
+      var reasonText = val('rejReasonInput') || "Mise en conformité du CV";
+      st.history = st.history || [];
+      st.history.unshift({ 
+        date: nowExactStr(), 
+        action: 'Mail de recommandations envoyé à l\'étudiant pour révision du CV (Motif : ' + reasonText + ')' 
+      });
+      apiPost('saveStudent', st);
+
+      var subject = encodeURIComponent("INSEEC Bachelor — Analyse et corrections requises sur votre CV");
+      var body = encodeURIComponent(msg);
+      window.location.href = "mailto:" + st.email + "?subject=" + subject + "&body=" + body;
+    });
+
+    document.getElementById('btnDlRejectMsg').addEventListener('click', function(){
+      var txt = val('rejMsgText'); if(!txt) return;
+      downloadTxtFile('Corrections_CV_' + st.lastName + '.txt', txt);
+    });
+
+    document.getElementById('btnConfirmReject').addEventListener('click', function(){
+      var reason = val('rejReasonInput') || "Modifications requises sur le CV";
+      apiPost('rejectStudent', { id: st.id, reason: reason }).then(function(){
+        mWrap.classList.remove('open');
+        refreshAll().then(shell);
+      });
+    });
+  }
+
+  function rAllStudents(main){
+    var f = STATE.studentFilter;
+    var specs = getCustomSpecs();
+    var statuses = getCustomStatuses();
+
+    var filtered = STATE.students.filter(function(s){
+      var q = f.search.toLowerCase();
+      var matchSearch = !q || (s.firstName + ' ' + s.lastName + ' ' + s.email).toLowerCase().indexOf(q) !== -1;
+      var matchStatus = !f.status || s.status === f.status;
+      var matchSpec = !f.specialite || s.specialite === f.specialite;
+      return matchSearch && matchStatus && matchSpec;
+    });
+
+    main.innerHTML = 
+      '<div class="head"><div><h2>Tous les Étudiants</h2><p class="head-sub">'+filtered.length+' étudiant(s) au total</p></div></div>'+
+      '<div class="filters">'+
+        '<input class="fi" id="stSrch" placeholder="Rechercher par nom, prénom, email..." value="'+esc(f.search)+'">'+
+        '<select class="fi-sel" id="stStat"><option value="">Tous les statuts</option>'+statuses.map(function(s){return'<option'+(f.status===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select>'+
+        '<select class="fi-sel" id="stSpec"><option value="">Toutes les spécialités</option>'+specs.map(function(s){return'<option'+(f.specialite===s.name?' selected':'')+'>'+s.name+'</option>';}).join('')+'</select>'+
+      '</div>'+
+      '<div class="lst">'+filtered.map(function(s){
+        return '<div class="row" data-openst="'+esc(s.id)+'"><div class="row-m">'+
+          '<div class="rn">'+esc(s.firstName)+' '+esc(s.lastName)+'</div>'+
+          '<div class="rm">✉️ '+esc(s.email||'N/C')+' · 📞 '+esc(s.phone||'N/C')+' · Spécialité : <b>'+esc(s.specialite||'N/C')+'</b></div>'+
+        '</div>'+
+        statusChip(s.status)+'</div>';
+      }).join('')+(filtered.length?'':'<p class="rm" style="padding:20px;">Aucun étudiant trouvé.</p>')+'</div>';
+
+    document.getElementById('stSrch').addEventListener('input',function(e){f.search=e.target.value;rAllStudents(main);});
+    document.getElementById('stStat').addEventListener('change',function(e){f.status=e.target.value;rAllStudents(main);});
+    document.getElementById('stSpec').addEventListener('change',function(e){f.specialite=e.target.value;rAllStudents(main);});
+
+    Array.prototype.forEach.call(document.querySelectorAll('[data-openst]'),function(r){
+      r.addEventListener('click',function(){
+        var st=STATE.students.filter(function(x){return x.id===r.getAttribute('data-openst');})[0];
+        if(st) openStudentModal(st);
+      });
+    });
+  }
+
+  function openStudentModal(st){
+    var specs=getCustomSpecs(), statuses=getCustomStatuses();
+    var activeKey = st.activeCv === 'cv2' ? st.id + '_cv2' : (st.activeCv === 'portfolio' ? st.id + '_port' : st.id + '_cv1');
+
+    getPdfBlob(activeKey).then(function(pdfData){
+      var pdfSection = pdfData ? 
+        '<iframe class="pdf-viewer" src="'+pdfData+'"></iframe>'+
+        '<div style="margin-top:10px;display:flex;gap:10px;"><a href="'+pdfData+'" download="Document_'+esc(st.lastName)+'.pdf" class="btn sm prim">Télécharger le document sélectionné</a></div>' : 
+        '<p class="rm">Aucun fichier à afficher pour la sélection actuelle.</p>';
+
+      var html=
+        '<div class="fgrid">'+
+          '<div class="fgroup"><label>Prénom *</label><input id="m_fn" value="'+esc(st.firstName)+'"></div>'+
+          '<div class="fgroup"><label>Nom *</label><input id="m_ln" value="'+esc(st.lastName)+'"></div>'+
+          '<div class="fgroup"><label>Email *</label><input id="m_em" value="'+esc(st.email)+'"></div>'+
+          '<div class="fgroup"><label>Téléphone *</label><input id="m_ph" value="'+esc(st.phone)+'"></div>'+
+          '<div class="fgroup"><label>Spécialité</label><select id="m_sp">'+specs.map(function(s){return'<option'+(st.specialite===s.name?' selected':'')+'>'+s.name+'</option>';}).join('')+'</select></div>'+
+          '<div class="fgroup"><label>Statut</label><select id="m_st">'+statuses.map(function(s){return'<option'+(st.status===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select></div>'+
+          '<div class="fgroup full" style="grid-column: span 2;"><label>Compétences clés</label><input id="m_sk" value="'+esc(st.skills)+'"></div>'+
+        '</div>'+
+
+        '<div class="card" style="margin-top:10px;">'+
+          '<h3>📄 Documents Candidat (Multi-fichiers)</h3>'+
+          '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">'+
+            '<div style="border:1px solid var(--ln);padding:10px;border-radius:8px;">'+
+              '<label style="font-size:11px;font-weight:800;display:block;margin-bottom:4px;">CV PRINCIPAL</label>'+
+              '<input type="file" id="in_cv1" accept="application/pdf" style="font-size:11px;">'+
+              '<label style="margin-top:6px;display:block;font-size:12px;cursor:pointer;"><input type="radio" name="active_doc" value="cv1" '+(st.activeCv!=='cv2'&&st.activeCv!=='portfolio'?'checked':'')+'> Afficher en principal</label>'+
+            '</div>'+
+            '<div style="border:1px solid var(--ln);padding:10px;border-radius:8px;">'+
+              '<label style="font-size:11px;font-weight:800;display:block;margin-bottom:4px;">CV SECONDAIRE</label>'+
+              '<input type="file" id="in_cv2" accept="application/pdf" style="font-size:11px;">'+
+              '<label style="margin-top:6px;display:block;font-size:12px;cursor:pointer;"><input type="radio" name="active_doc" value="cv2" '+(st.activeCv==='cv2'?'checked':'')+'> Afficher ce CV</label>'+
+            '</div>'+
+            '<div style="border:1px solid var(--ln);padding:10px;border-radius:8px;">'+
+              '<label style="font-size:11px;font-weight:800;display:block;margin-bottom:4px;">PORTFOLIO / PROJET</label>'+
+              '<input type="file" id="in_port" accept="application/pdf" style="font-size:11px;">'+
+              '<label style="margin-top:6px;display:block;font-size:12px;cursor:pointer;"><input type="radio" name="active_doc" value="portfolio" '+(st.activeCv==='portfolio'?'checked':'')+'> Afficher le Portfolio</label>'+
+            '</div>'+
+          '</div>'+
+        '</div>'+
+
+        '<div class="card" style="margin-top:10px;">'+
+          '<h3>Ajouter un commentaire administratif</h3>'+
+          '<div style="display:flex;gap:10px;margin-bottom:12px;">'+
+            '<input id="m_addlog" placeholder="Note interne..." style="flex:1;border:1px solid var(--ln);border-radius:8px;padding:8px 12px;outline:none;">'+
+            '<button class="btn sm prim" id="m_btnlog">+ Ajouter Note</button>'+
+          '</div>'+
+          '<h3>Historique complet du dossier</h3>'+
+          '<div id="m_loglst">'+(st.history||[]).map(function(h){
+            return '<div class="log-item"><div class="log-d">📅 '+esc(h.date)+'</div><div class="log-t">'+esc(h.action)+'</div></div>';
+          }).join('')+'</div>'+
+        '</div>'+
+
+        '<div class="card" style="margin-top:10px;"><h3>Aperçu du document sélectionné</h3>'+pdfSection+'</div>'+
+
+        '<div style="display:flex;justify-content:space-between;margin-top:16px;gap:10px;flex-wrap:wrap;">'+
+          '<button class="btn dan sm" id="m_del">Supprimer la fiche</button>'+
+          '<button class="btn suc sm" id="m_sav">Enregistrer les modifications</button>'+
+        '</div>';
+
+      openModal('Fiche Étudiant : '+st.firstName+' '+st.lastName, html);
+
+      document.getElementById('m_btnlog').addEventListener('click', function(){
+        var txt = val('m_addlog'); if(!txt) return;
+        st.history = st.history || [];
+        st.history.unshift({ date: nowExactStr(), action: 'Note interne : ' + txt });
+        apiPost('saveStudent', st).then(function(){ openStudentModal(st); });
+      });
+
+      document.getElementById('m_sav').addEventListener('click', function(){
+        st.firstName=val('m_fn'); st.lastName=val('m_ln'); st.email=val('m_em'); st.phone=val('m_ph');
+        st.specialite=val('m_sp'); st.status=val('m_st'); st.skills=val('m_sk');
+
+        var rad = document.querySelector('input[name="active_doc"]:checked');
+        if(rad) st.activeCv = rad.value;
+
+        var f1 = document.getElementById('in_cv1').files[0];
+        var f2 = document.getElementById('in_cv2').files[0];
+        var fp = document.getElementById('in_port').files[0];
+
+        var p1 = f1 ? fileToBase64(f1).then(function(b){ return savePdfBlob(st.id + '_cv1', b).then(function(){ return extractPdfText(f1).then(function(t){ st.rawText = t; }); }); }) : Promise.resolve();
+        var p2 = f2 ? fileToBase64(f2).then(function(b){ return savePdfBlob(st.id + '_cv2', b); }) : Promise.resolve();
+        var pp = fp ? fileToBase64(fp).then(function(b){ return savePdfBlob(st.id + '_port', b); }) : Promise.resolve();
+
+        Promise.all([p1, p2, pp]).then(function(){
+          apiPost('saveStudent', st).then(closeAndRefresh);
+        });
+      });
+
+      document.getElementById('m_del').addEventListener('click',function(){
+        if(confirm('Supprimer définitivement la fiche de cet étudiant ?')){
+          removePdfBlob(st.id + '_cv1'); removePdfBlob(st.id + '_cv2'); removePdfBlob(st.id + '_port');
+          apiPost('deleteStudent',{id:st.id}).then(closeAndRefresh);
+        }
+      });
+
+      function closeAndRefresh(){ mWrap.classList.remove('open'); refreshAll().then(shell); }
+    });
+  }
+
+  function rStudentFolders(main){
+    var fv=STATE.folderStudents, specs=getCustomSpecs();
+    if(fv.mode==='sublist'){
+      var list=STATE.students.filter(function(s){return s.specialite===fv.spec;});
+      main.innerHTML=
+        '<div class="head"><div><h2>Dossier Spécialité : '+esc(fv.spec)+'</h2></div>'+
+        '<button class="btn sm" id="bkSpec">← Retour aux dossiers</button></div>'+
+        '<div class="lst">'+list.map(function(s){
+          return '<div class="row" data-openst="'+esc(s.id)+'"><div class="row-m"><div class="rn">'+esc(s.firstName)+' '+esc(s.lastName)+'</div><div class="rm">✉️ '+esc(s.email||'N/C')+' · 📞 '+esc(s.phone||'N/C')+'</div></div>'+statusChip(s.status)+'</div>';
+        }).join('')+(list.length?'':'<p class="rm" style="padding:20px;">Aucun étudiant inscrit dans cette filière.</p>')+'</div>';
+
+      document.getElementById('bkSpec').addEventListener('click',function(){fv.mode='root';rStudentFolders(main);});
+      Array.prototype.forEach.call(document.querySelectorAll('[data-openst]'),function(r){
+        r.addEventListener('click',function(){
+          var st=STATE.students.filter(function(x){return x.id===r.getAttribute('data-openst');})[0];
+          if(st) openStudentModal(st);
+        });
+      });
+      return;
+    }
+
+    main.innerHTML=
+      '<div class="head"><h2>Dossiers par Spécialisation ('+specs.length+')</h2></div>'+
+      '<div class="folder-grid">'+specs.map(function(sp){
+        var count=STATE.students.filter(function(s){return s.specialite===sp.name;}).length;
+        return '<div class="fc" data-openspec="'+esc(sp.name)+'">'+
+          '<div class="fc-head"><div class="fc-ico">📁</div><span class="fc-rncp">'+esc(sp.rncp)+'</span></div>'+
+          '<div class="fc-name">'+esc(sp.name)+'</div>'+
+          '<div class="fc-cnt">'+count+' étudiant(s)</div>'+
+        '</div>';
+      }).join('')+'</div>';
+
+    Array.prototype.forEach.call(document.querySelectorAll('[data-openspec]'),function(fc){
+      fc.addEventListener('click',function(){
+        fv.spec=fc.getAttribute('data-openspec'); fv.mode='sublist'; rStudentFolders(main);
+      });
+    });
+  }
+
+  function rRncpAnalyzer(main){
+    var rncpDb = getRncpDatabase();
+
+    main.innerHTML = 
+      '<div class="head"><h2>Vérificateur d\'Éligibilité Missions / RNCP</h2><p class="head-sub">Analyse détaillée de l\'offre par rapport aux blocs officiels du diplôme</p></div>'+
+      '<div class="card">'+
+        '<div class="fgrid">'+
+          '<div class="fgroup"><label>Spécialisation / Parcours :</label>'+
+            '<select id="rncpSpecSelect"><option value="">-- Sélectionnez une spécialisation --</option>'+
+              Object.keys(rncpDb).map(function(k){
+                return '<option value="'+k+'">'+esc(rncpDb[k].name)+' ('+esc(rncpDb[k].rncp)+')</option>';
+              }).join('')+
+            '</select>'+
+          '</div>'+
+          '<div class="fgroup"><label>Titre RNCP associé :</label><input id="rncpTitleDisp" readonly style="background:#f1f5f9;"></div>'+
+          '<div class="fgroup full" style="grid-column: span 2;"><label>Missions de l\'offre :</label>'+
+            '<textarea id="rncpMissionsText" placeholder="Collez le texte des missions à valider..." style="height:120px;"></textarea>'+
+          '</div>'+
+        '</div>'+
+        '<button class="btn prim" id="btnAnalyzeRNCP" style="margin-top:12px;">Analyser la conformité aux blocs RNCP</button>'+
+      '</div>'+
+      '<div id="rncpResults"></div>';
+
+    document.getElementById('rncpSpecSelect').addEventListener('change', function(){
+      var k = this.value;
+      if(k && rncpDb[k]){
+        document.getElementById('rncpTitleDisp').value = rncpDb[k].title + ' (' + rncpDb[k].rncp + ')';
+      } else {
+        document.getElementById('rncpTitleDisp').value = '';
+      }
+    });
+
+    document.getElementById('btnAnalyzeRNCP').addEventListener('click', function(){
+      var specKey = val('rncpSpecSelect');
+      var missionsText = val('rncpMissionsText').toLowerCase();
+
+      if(!specKey || !rncpDb[specKey]){ alert("Veuillez sélectionner une spécialisation."); return; }
+      if(!missionsText){ alert("Veuillez coller le texte des missions."); return; }
+
+      var program = rncpDb[specKey];
+      var html = '<div class="card"><h3>Rapport de Conformité — ' + esc(program.name) + ' (' + esc(program.rncp) + ')</h3></div>';
+
+      (program.blocs||[]).forEach(function(bloc){
+        var matchedKeywords = (bloc.keywords||[]).filter(function(kw){ return missionsText.includes(kw); });
+        var isValid = matchedKeywords.length > 0;
+
+        html += 
+          '<div class="block-card ' + (isValid ? 'valid' : 'invalid') + '">'+
+            '<div style="display:flex; justify-content:space-between; align-items:center;">'+
+              '<strong>' + esc(bloc.id) + ' : ' + esc(bloc.label) + '</strong>'+
+              '<span class="chip ' + (isValid ? 'ch-gr' : 'ch-re') + '">' + (isValid ? 'Bloc Couvert' : 'Avertissement : Non identifié') + '</span>'+
+            '</div>'+
+            '<p style="margin-top:6px; font-size:12px; color:var(--tx);">' + esc(bloc.details||'') + '</p>'+
+            '<p style="margin-top:8px; font-size:12.5px; color:var(--mu);">'+
+              (isValid ? 'Mots-clés repérés : <b>' + matchedKeywords.join(', ') + '</b>' : 'Aucun mot-clé explicite trouvé pour ce bloc dans le texte transmitted.')+
+            '</p>'+
+          '</div>';
+      });
+
+      document.getElementById('rncpResults').innerHTML = html;
+    });
+  }
+
+  function rMatching(main){
+    var specs = getCustomSpecs();
+    var statuses = getCustomStatuses();
+    var pendingOffers = STATE.offers.filter(function(o){ return o.status === 'À traiter'; });
+
+    main.innerHTML=
+      '<div class="head"><h2>Matching de Candidatures</h2><p class="head-sub">Analyse poussée d\'adéquation et envoi groupé</p></div>'+
+      '<div class="card">'+
+        '<h3>1. Offre de référence ('+pendingOffers.length+' disponible(s))</h3>'+
+        '<div class="fgrid">'+
+          '<div class="fgroup"><label>Sélectionner une offre "À traiter"</label>'+
+            '<select id="mOfferSelect"><option value="">-- Choisir une offre --</option>'+
+              pendingOffers.map(function(o){ return '<option value="'+o.id+'">'+esc(o.title)+' ('+esc(o.companyName)+')</option>'; }).join('')+
+            '</select>'+
+          '</div>'+
+          '<div class="fgroup"><label>Ou importer la fiche en PDF</label><input type="file" id="mOfferPdfFile" accept="application/pdf"></div>'+
+          '<div class="fgroup full" style="grid-column: span 2;"><label>Contenu de l\'offre</label><textarea id="mOfferText" placeholder="Texte de l\'offre..." style="height:70px;"></textarea></div>'+
+        '</div>'+
+        '<h3 style="margin-top:14px;">2. Filtres candidats</h3>'+
+        '<div style="margin-bottom:12px;">'+
+          '<label style="font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;">Spécialités :</label>'+
+          '<div class="check-group" id="mSpecChecks">'+
+            specs.map(function(sp){
+              return '<label class="check-item"><input type="checkbox" value="'+esc(sp.name)+'" checked> '+esc(sp.name)+'</label>';
+            }).join('')+
+          '</div>'+
+        '</div>'+
+        '<div style="margin-bottom:16px;">'+
+          '<label style="font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;">Statuts candidats :</label>'+
+          '<div class="check-group" id="mStatusChecks">'+
+            statuses.map(function(st){
+              return '<label class="check-item"><input type="checkbox" value="'+esc(st)+'" '+(st==='Actif'||st==='En recherche'||st==='Peu actif'?'checked':'')+'> '+esc(st)+'</label>';
+            }).join('')+
+          '</div>'+
+        '</div>'+
+        '<button class="btn prim" id="runMatchBtn">🚀 Lancer l\'évaluation approfondie (IA Puissance Max)</button>'+
+        '<div id="mStatus" style="margin-top:12px;font-weight:700;color:var(--pu);"></div>'+
+      '</div>'+
+      '<div id="mResults"></div>';
+
+    var currentOfferObj = null;
+
+    document.getElementById('mOfferSelect').addEventListener('change', function(){
+      var offId = this.value;
+      if(!offId) return;
+      currentOfferObj = STATE.offers.filter(function(o){ return o.id === offId; })[0];
+      if(currentOfferObj){
+        document.getElementById('mOfferText').value = currentOfferObj.title + ' - ' + (currentOfferObj.companyName||'') + '\n' + (currentOfferObj.rawText||'');
+      }
+    });
+
+    document.getElementById('mOfferPdfFile').addEventListener('change', function(){
+      var file = this.files[0];
+      if(file){ extractPdfText(file).then(function(txt){ document.getElementById('mOfferText').value = txt; }); }
+    });
+
+    document.getElementById('runMatchBtn').addEventListener('click', function(){
+      var offerText = val('mOfferText');
+      if(!offerText){ alert("Veuillez sélectionner une offre ou importer sa fiche."); return; }
+
+      var selectedSpecs = Array.from(document.querySelectorAll('#mSpecChecks input:checked')).map(function(cb){ return cb.value; });
+      var selectedStatuses = Array.from(document.querySelectorAll('#mStatusChecks input:checked')).map(function(cb){ return cb.value; });
+
+      var eligible = STATE.students.filter(function(s){
+        var matchSpec = selectedSpecs.length === 0 || selectedSpecs.indexOf(s.specialite) !== -1;
+        var matchStatus = selectedStatuses.length === 0 || selectedStatuses.indexOf(s.status) !== -1;
+        return matchSpec && matchStatus;
+      });
+
+      if(eligible.length === 0){ alert("Aucun étudiant ne correspond aux filtres cochés."); return; }
+
+      var statusEl = document.getElementById('mStatus');
+      statusEl.textContent = 'Évaluation approfondie de ' + eligible.length + ' candidat(s) en cours...';
+
+      var promises = eligible.map(function(s){
+        return callAIMatchingDetailed(s.rawText || (s.firstName + ' ' + s.lastName + ' ' + s.skills), offerText)
+          .then(function(res){
+            return { student: s, score: res.score||70, positives: res.positives||[], negatives: res.negatives||[], verdict: res.verdict||"" };
+          });
+      });
+
+      Promise.all(promises).then(function(results){
+        results.sort(function(a,b){ return b.score - a.score; });
+
+        statusEl.textContent = 'Évaluation terminée pour ' + results.length + ' candidat(s).';
+
+        var html = 
+          '<div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">'+
+            '<h3>🏆 Classement des Candidats (' + results.length + ')</h3>'+
+            '<button class="btn suc" id="btnTransmitSelected">✉️ Transmettre les candidats cochés au recruteur</button>'+
+          '</div><div class="lst">';
+
+        results.forEach(function(item, idx){
+          var s = item.student;
+          var isTransmitted = currentOfferObj && (s.sentOffers||[]).indexOf(currentOfferObj.id) !== -1;
+          var scoreClass = item.score >= 75 ? 'score-high' : (item.score >= 50 ? 'score-mid' : 'score-low');
+
+          html += 
+            '<div class="card" style="margin-bottom:16px;">'+
+              '<div style="display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;">'+
+                '<div style="display:flex;gap:14px;align-items:center;">'+
+                  '<input type="checkbox" class="match-select-cb" data-stid="'+s.id+'" style="width:20px;height:20px;cursor:pointer;">'+
+                  '<div style="font-size:16px;font-weight:800;color:var(--bl);background:#eff6ff;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;">#'+(idx+1)+'</div>'+
+                  '<div>'+
+                    '<h4 style="font-size:16px;color:var(--dk);cursor:pointer;" data-openst="'+s.id+'">'+esc(s.firstName)+' '+esc(s.lastName)+'</h4>'+
+                    '<span style="font-size:12.5px;color:var(--mu);">✉️ '+esc(s.email||'N/C')+' · 📞 '+esc(s.phone||'N/C')+'</span><br>'+
+                    '<span style="font-size:12px;color:var(--bl);font-weight:700;">Spécialité : '+esc(s.specialite)+' · Statut : '+esc(s.status)+'</span>'+
+                  '</div>'+
+                '</div>'+
+                '<div class="score-badge '+scoreClass+'">'+item.score+' / 100</div>'+
+              '</div>'+
+              
+              '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;">'+
+                '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px;font-size:12.5px;">'+
+                  '<b style="color:#166534;display:block;margin-bottom:6px;">🎯 Points Forts / Adéquations :</b>'+
+                  '<ul style="padding-left:16px;color:#15803d;line-height:1.4;">'+
+                    item.positives.map(function(p){ return '<li>'+esc(p)+'</li>'; }).join('')+
+                  '</ul>'+
+                '</div>'+
+                '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:12px;font-size:12.5px;">'+
+                  '<b style="color:#991b1b;display:block;margin-bottom:6px;">⚠️ Points de Vigilance / Lacunes :</b>'+
+                  '<ul style="padding-left:16px;color:#b91c1c;line-height:1.4;">'+
+                    item.negatives.map(function(n){ return '<li>'+esc(n)+'</li>'; }).join('')+
+                  '</ul>'+
+                '</div>'+
+              '</div>'+
+
+              '<div style="background:#f8fafc;border:1px solid var(--ln);border-radius:10px;padding:12px;margin-top:10px;font-size:13px;line-height:1.4;">'+
+                '<b>💡 Synthèse RH :</b> '+esc(item.verdict)+
+              '</div>'+
+
+              '<div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;border-top:1px solid var(--ln);padding-top:10px;">'+
+                '<div>'+
+                  (isTransmitted ? '<span class="chip ch-bl">CV transmis à cette offre</span>' : '<span class="chip ch-gy">Non transmis</span>')+
+                '</div>'+
+              '</div>'+
+            '</div>';
+        });
+        html += '</div>';
+
+        document.getElementById('mResults').innerHTML = html;
+
+        Array.prototype.forEach.call(document.querySelectorAll('[data-openst]'), function(el){
+          el.addEventListener('click', function(){
+            var st = STATE.students.filter(function(x){ return x.id === el.getAttribute('data-openst'); })[0];
+            if(st) openStudentModal(st);
+          });
+        });
+
+        document.getElementById('btnTransmitSelected').addEventListener('click', function(){
+          var cbs = document.querySelectorAll('.match-select-cb:checked');
+          if(cbs.length === 0){ alert("Veuillez cocher au moins un candidat à transmettre."); return; }
+
+          var selectedIds = Array.from(cbs).map(function(c){ return c.getAttribute('data-stid'); });
+          var selectedSts = STATE.students.filter(function(s){ return selectedIds.indexOf(s.id) !== -1; });
+
+          var recEmail = currentOfferObj ? (currentOfferObj.contactEmail||'') : '';
+          var recName = currentOfferObj ? (currentOfferObj.contactName||'Recruteur') : 'Recruteur';
+          var offTitle = currentOfferObj ? currentOfferObj.title : 'votre offre d\'alternance';
+
+          var emailLines = "Bonjour " + recName + ",\n\n" +
+            "Suite à notre échange concernant le poste de " + offTitle + ", le Bureau des Carrières INSEEC Bachelor a le plaisir de vous transmettre une sélection de profils qualifiés correspondant à vos exigences :\n\n";
+
+          selectedSts.forEach(function(st){
+            emailLines += "• " + st.firstName + " " + st.lastName + " — Spécialité : " + st.specialite + "\n";
+            emailLines += "  Compétences clés : " + (st.skills||'Étudiant INSEEC Bachelor') + "\n\n";
+          });
+
+          emailLines += "Vous trouverez leurs CVs joints à cet envoi. Nous restons à votre entière disposition pour planifier un premier échange.\n\nBien cordialement,\nBureau des Carrières INSEEC Bachelor";
+
+          var mHtml = 
+            '<div class="card">'+
+              '<h3>✉️ Mail de Présentation au Recruteur (Prêt à l\'envoi)</h3>'+
+              '<div style="margin-bottom:10px;"><label style="font-weight:700;">Destinataire :</label> <input id="recEmailInput" value="'+esc(recEmail)+'" style="width:100%;padding:8px;border:1px solid var(--ln);border-radius:6px;"></div>'+
+              '<textarea id="recMailText" style="width:100%;height:240px;border:1px solid var(--ln);border-radius:9px;padding:12px;font-size:13px;line-height:1.5;">'+esc(emailLines)+'</textarea>'+
+              '<div style="margin-top:14px;display:flex;justify-content:flex-end;">'+
+                '<button class="btn suc sm" id="btnConfirmSendRec">Envoyer le Mail & Marquer l\'offre "Traitée"</button>'+
+              '</div>'+
+            '</div>';
+
+          openModal('Transmission au Recruteur (' + selectedSts.length + ' candidat(s))', mHtml);
+
+          document.getElementById('btnConfirmSendRec').addEventListener('click', function(){
+            var finalEmail = val('recEmailInput');
+            var finalBody = val('recMailText');
+
+            selectedSts.forEach(function(st){
+              st.sentOffers = st.sentOffers || [];
+              if(currentOfferObj && st.sentOffers.indexOf(currentOfferObj.id) === -1){
+                st.sentOffers.push(currentOfferObj.id);
+              }
+              st.history = st.history || [];
+              st.history.unshift({ date: nowExactStr(), action: 'CV transmis à l\'entreprise pour l\'offre : ' + offTitle });
+              st.status = 'Candidature envoyée';
+              apiPost('saveStudent', st);
+            });
+
+            if(currentOfferObj){
+              currentOfferObj.status = 'Traité';
+              apiPost('saveOffer', currentOfferObj);
+            }
+
+            var subject = encodeURIComponent("Candidatures INSEEC Bachelor — " + offTitle);
+            var body = encodeURIComponent(finalBody);
+            window.location.href = "mailto:" + finalEmail + "?subject=" + subject + "&body=" + body;
+
+            mWrap.classList.remove('open');
+            refreshAll().then(shell);
+          });
+        });
+      });
+    });
+  }
+
+  function rOffers(main){
+    var filter = STATE.offerFilter;
+
+    var filtered = STATE.offers.filter(function(o){
+      var matchSearch = (o.title + ' ' + o.companyName + ' ' + (o.contactName||'')).toLowerCase().indexOf(filter.search.toLowerCase()) !== -1;
+      var matchStatus = !filter.status || o.status === filter.status;
+      return matchSearch && matchStatus;
+    });
+
+    main.innerHTML = 
+      '<div class="head"><div><h2>Gestion des Offres d\'Emploi</h2></div>'+
+      '<button class="btn prim sm" id="addOffBtn">+ Ajouter une offre</button></div>'+
+      '<div class="filters">'+
+        '<input class="fi" id="ofSearch" placeholder="Rechercher poste, entreprise, contact..." value="'+esc(filter.search)+'">'+
+        '<select class="fi-sel" id="ofStatus"><option value="">Tous les statuts</option>'+OFFER_STATUSES.map(function(s){return'<option'+(filter.status===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select>'+
+      '</div>'+
+      '<div class="lst">'+filtered.map(function(o){
+        return '<div class="row" data-openoff="'+esc(o.id)+'"><div class="row-m">'+
+          '<div class="rn">'+esc(o.title)+' <span style="font-size:13px;color:var(--bl);font-weight:700;">@ '+esc(o.companyName)+'</span></div>'+
+          '<div class="rm">Contact : <b>'+esc(o.contactName||'N/C')+'</b> · Email : '+esc(o.contactEmail||'N/C')+' · Tél : '+esc(o.contactPhone||'N/C')+'</div>'+
+        '</div>'+
+        '<div>'+statusChip(o.status||'À traiter')+'</div></div>';
+      }).join('')+(filtered.length?'':'<p class="rm" style="padding:20px;">Aucune offre trouvée.</p>')+'</div>';
+
+    document.getElementById('addOffBtn').addEventListener('click',function(){
+      openOfferModal({id:uid(),title:'',companyName:'',contactName:'',contactEmail:'',contactPhone:'',status:'À traiter'});
+    });
+
+    document.getElementById('ofSearch').addEventListener('input',function(e){filter.search=e.target.value;rOffers(main);});
+    document.getElementById('ofStatus').addEventListener('change',function(e){filter.status=e.target.value;rOffers(main);});
+
+    Array.prototype.forEach.call(document.querySelectorAll('[data-openoff]'),function(r){
+      r.addEventListener('click',function(){
+        var of=STATE.offers.filter(function(x){return x.id===r.getAttribute('data-openoff');})[0];
+        if(of) openOfferModal(of);
+      });
+    });
+  }
+
+  function openOfferModal(of){
+    getPdfBlob(of.id).then(function(pdfData){
+      var pdfSection = pdfData ? 
+        '<iframe class="pdf-viewer" src="'+pdfData+'"></iframe>' : '<p class="rm">Aucun fichier PDF joint.</p>';
+
+      var html=
+        '<div class="fgrid">'+
+          '<div class="fgroup"><label>Intitulé du poste *</label><input id="mo_ti" value="'+esc(of.title)+'"></div>'+
+          '<div class="fgroup"><label>Entreprise *</label><input id="mo_co" value="'+esc(of.companyName)+'"></div>'+
+          '<div class="fgroup"><label>Nom & Prénom du Contact *</label><input id="mo_cn" value="'+esc(of.contactName||'')+ '"></div>'+
+          '<div class="fgroup"><label>Email du contact *</label><input id="mo_em" value="'+esc(of.contactEmail||'')+ '"></div>'+
+          '<div class="fgroup"><label>Téléphone du contact *</label><input id="mo_ph" value="'+esc(of.contactPhone||'')+ '"></div>'+
+          '<div class="fgroup"><label>Statut de traitement</label><select id="mo_st">'+OFFER_STATUSES.map(function(s){return'<option'+(of.status===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select></div>'+
+          '<div class="fgroup full" style="grid-column: span 2;"><label>Fiche de poste (PDF)</label><input type="file" id="mo_pdf_in" accept="application/pdf"></div>'+
+        '</div>'+
+        '<div class="card" style="margin-top:10px;"><h3>Aperçu du PDF</h3>'+pdfSection+'</div>'+
+        '<div style="display:flex;justify-content:space-between;margin-top:16px;">'+
+          '<button class="btn dan sm" id="mo_del">Supprimer</button>'+
+          '<button class="btn suc sm" id="mo_sav">Enregistrer</button>'+
+        '</div>';
+
+      openModal('Fiche Offre : '+(of.title||'Nouvelle offre'), html);
+
+      document.getElementById('mo_sav').addEventListener('click',function(){
+        of.title=val('mo_ti');
+        of.companyName=val('mo_co');
+        of.contactName=val('mo_cn');
+        of.contactEmail=val('mo_em');
+        of.contactPhone=val('mo_ph');
+        of.status=val('mo_st');
+        
+        if(of.companyName && of.contactEmail){
+          apiPost('saveCompany', { id: uid(), companyName: of.companyName, contactName: of.contactName, email: of.contactEmail, phone: of.contactPhone });
+        }
+
+        var fileIn=document.getElementById('mo_pdf_in').files[0];
+        var p = fileIn ? fileToBase64(fileIn).then(function(b64){
+          return savePdfBlob(of.id, b64).then(function(){
+            return extractPdfText(fileIn).then(function(txt){ of.rawText=txt; });
+          });
+        }) : Promise.resolve();
+
+        p.then(function(){
+          apiPost('saveOffer',of).then(closeAndRefresh);
+        });
+      });
+
+      document.getElementById('mo_del').addEventListener('click',function(){
+        if(confirm('Supprimer cette offre ?')){
+          removePdfBlob(of.id);
+          apiPost('deleteOffer',{id:of.id}).then(closeAndRefresh);
+        }
+      });
+
+      function closeAndRefresh(){ mWrap.classList.remove('open'); refreshAll().then(shell); }
+    });
+  }
+
+  function rCvAnalyzer(main){
+    var pendingOffers = STATE.offers.filter(function(o){ return o.status === 'À traiter'; });
+
+    main.innerHTML = 
+      '<div class="head"><h2>Optimisation ATS & Analyse</h2><p class="head-sub">Sélection parmi les offres "À traiter"</p></div>'+
+      '<div class="card">'+
+        '<h3>1. Fiche de Poste de référence ('+pendingOffers.length+' disponible(s))</h3>'+
+        '<div class="fgrid">'+
+          '<div class="fgroup"><label>Sélectionner une offre "À traiter"</label>'+
+            '<select id="anOfferSelect"><option value="">-- Choisir une offre --</option>'+
+              pendingOffers.map(function(o){ return '<option value="'+o.id+'">'+esc(o.title)+' ('+esc(o.companyName)+')</option>'; }).join('')+
+            '</select>'+
+          '</div>'+
+          '<div class="fgroup"><label>Ou importer la fiche en PDF</label><input type="file" id="anOfferPdfFile" accept="application/pdf"></div>'+
+          '<div class="fgroup full" style="grid-column: span 2;"><label>Contenu de l\'offre</label><textarea id="anOfferText" placeholder="Texte de la fiche de poste..." style="height:70px;"></textarea></div>'+
+        '</div>'+
+        '<h3 style="margin-top:16px;">2. CV de l\'étudiant</h3>'+
+        '<div class="fgroup"><label>Charger le PDF du CV *</label><input type="file" id="anCvFile" accept="application/pdf"></div>'+
+      '</div>'+
+      '<div class="tab-nav">'+
+        '<div class="tab-btn active" id="tabMode1">1. Diagnostic & Recommandations</div>'+
+        '<div class="tab-btn" id="tabMode2">2. Génération du CV Structuré</div>'+
+      '</div>'+
+      '<div id="anOutputBox"></div>';
+
+    var currentCvText = '';
+    var currentOfferText = '';
+
+    document.getElementById('anOfferSelect').addEventListener('change', function(){
+      var offId = this.value;
+      var offer = STATE.offers.filter(function(o){ return o.id === offId; })[0];
+      if(offer) {
+        currentOfferText = offer.title + '\n' + (offer.rawText||'');
+        document.getElementById('anOfferText').value = currentOfferText;
+      }
+    });
+
+    document.getElementById('anOfferPdfFile').addEventListener('change', function(){
+      var file = this.files[0];
+      if(file){ extractPdfText(file).then(function(txt){ currentOfferText = txt; document.getElementById('anOfferText').value = txt; }); }
+    });
+
+    document.getElementById('tabMode1').addEventListener('click', function(){
+      this.classList.add('active'); document.getElementById('tabMode2').classList.remove('active');
+      renderMode1();
+    });
+
+    document.getElementById('tabMode2').addEventListener('click', function(){
+      this.classList.add('active'); document.getElementById('tabMode1').classList.remove('active');
+      renderMode2();
+    });
+
+    function renderMode1(){
+      document.getElementById('anOutputBox').innerHTML = 
+        '<div class="card">'+
+          '<h3>Diagnostic et analyse d\'adéquation</h3>'+
+          '<button class="btn prim" id="btnRunDiag">Lancer l\'analyse (Double Puissance IA)</button>'+
+          '<div id="diagResultBox" style="margin-top:16px;display:none;">'+
+            '<textarea id="diagText" style="width:100%;height:380px;border:1px solid var(--ln);border-radius:9px;padding:12px;font-size:13px;outline:none;line-height:1.5;"></textarea>'+
+            '<button class="btn sm prim" id="btnDlDiag" style="margin-top:10px;">Exporter le rapport (.txt)</button>'+
+          '</div>'+
+        '</div>';
+
+      document.getElementById('btnRunDiag').addEventListener('click', function(){
+        var offText = val('anOfferText') || currentOfferText;
+        var cvFile = document.getElementById('anCvFile').files[0];
+        if(!cvFile && !currentCvText){ alert("Veuillez fournir le CV en PDF."); return; }
+
+        var btn = this;
+        btn.textContent = 'Analyse approfondie en cours...';
+
+        var p = cvFile ? extractPdfText(cvFile) : Promise.resolve(currentCvText);
+        p.then(function(txt){
+          currentCvText = txt;
+          return callAIDeepAuditCV(txt, offText);
+        }).then(function(resObj){
+          document.getElementById('diagResultBox').style.display = 'block';
+          document.getElementById('diagText').value = "--- ANALYSE INTERNE RH DÉTAILLÉE ---\n\n" + (resObj.internalAnalysis||'') + "\n\n--- MAIL RECOMMANDATIONS ÉTUDIANT ---\n\n" + (resObj.studentEmail||'');
+        }).finally(function(){ btn.textContent = 'Relancer l\'analyse'; });
+      });
+
+      var dlBtn = document.getElementById('btnDlDiag');
+      if(dlBtn){
+        dlBtn.addEventListener('click', function(){
+          downloadTxtFile('Rapport_Analyse_CV.txt', val('diagText'));
+        });
+      }
+    }
+
+    function renderMode2(){
+      document.getElementById('anOutputBox').innerHTML = 
+        '<div class="card">'+
+          '<h3>Génération du CV PDF réorganisé (Chronologie Inverse Strictly Respectée)</h3>'+
+          '<button class="btn prim" id="btnGenOptPdf">Générer le document PDF</button>'+
+          '<div id="optPdfBox" style="margin-top:16px;display:none;">'+
+            '<div style="background:#f8fafc;padding:14px;border-radius:10px;border:1px solid var(--ln);font-size:13px;margin-bottom:12px;" id="optPreviewText"></div>'+
+            '<button class="btn suc" id="btnDownloadOptPdf">Télécharger le CV (PDF)</button>'+
+          '</div>'+
+        '</div>';
+
+      var optData = null;
+
+      document.getElementById('btnGenOptPdf').addEventListener('click', function(){
+        var offText = val('anOfferText') || currentOfferText;
+        var cvFile = document.getElementById('anCvFile').files[0];
+        if(!cvFile && !currentCvText){ alert("Veuillez charger le fichier PDF du CV."); return; }
+
+        var btn = this;
+        btn.textContent = 'Traitement de haute précision...';
+
+        var p = cvFile ? extractPdfText(cvFile) : Promise.resolve(currentCvText);
+        p.then(function(txt){
+          currentCvText = txt;
+          return callAIOptimizeCVFull(txt, offText);
+        }).then(function(resJson){
+          optData = resJson;
+          document.getElementById('optPdfBox').style.display = 'block';
+          document.getElementById('optPreviewText').innerHTML = 
+            '<b>Candidat :</b> ' + esc(optData.fullName) + '<br>' +
+            '<b>Titre :</b> ' + esc(optData.title) + '<br>' +
+            '<b>Savoir-faire :</b> ' + esc((optData.hardSkills||[]).join(' · '));
+        }).finally(function(){ btn.textContent = 'Régénérer le document'; });
+      });
+
+      var dlPdfBtn = document.getElementById('btnDownloadOptPdf');
+      if(dlPdfBtn){
+        dlPdfBtn.addEventListener('click', function(){
+          if(!optData) return;
+          generateHighLegibilityA4Pdf(optData);
+        });
+      }
+    }
+
+    renderMode1();
+  }
+
+  function generateHighLegibilityA4Pdf(data){
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+
+    var margin = 14;
+    var pageWidth = 210;
+    var contentWidth = pageWidth - (margin * 2);
+
+    var totalDetails = (data.experiences || []).reduce(function(acc, x){
+      return acc + (Array.isArray(x.details) ? x.details.length : 1);
+    }, 0);
+
+    var baseFontSize = totalDetails > 14 ? 9 : 10;
+    var lineGap = totalDetails > 14 ? 4.2 : 5.2;
+    var sectionGap = totalDetails > 14 ? 7 : 10;
+
+    var y = 18;
+
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(15, 23, 42);
+    doc.text((data.fullName || "Candidat").toUpperCase(), margin, y);
+    y += 6;
+
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(9.5);
+    doc.setTextColor(100, 116, 139);
+    doc.text(data.contact || "Téléphone | Email | Adresse", margin, y);
+    y += 6;
+
+    doc.setDrawColor(203, 213, 225);
+    doc.setLineWidth(0.6);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 8;
+
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(30, 58, 138);
+    var splitTitle = doc.splitTextToSize((data.title || "PROFIL PROFESSIONNEL").toUpperCase(), contentWidth);
+    doc.text(splitTitle, margin, y);
+    y += (splitTitle.length * 5.5) + 3;
+
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(baseFontSize);
+    doc.setTextColor(30, 41, 59);
+    var splitSummary = doc.splitTextToSize(data.summary || "", contentWidth);
+    doc.text(splitSummary, margin, y);
+    y += (splitSummary.length * lineGap) + sectionGap;
+
+    function renderSectionTitle(titleText){
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(12.5);
+      doc.setTextColor(15, 23, 42);
+      doc.text(titleText.toUpperCase(), margin, y);
+      y += 2.5;
+      doc.setDrawColor(30, 58, 138);
+      doc.setLineWidth(0.8);
+      doc.line(margin, y, margin + 70, y);
+      y += 6;
+    }
+
+    renderSectionTitle("Expériences Professionnelles");
+
+    (data.experiences || []).forEach(function(exp){
+      doc.setFont("Helvetica", "bold");
+      doc.setFontSize(baseFontSize + 0.5);
+      doc.setTextColor(15, 23, 42);
+      doc.text(exp.role || "Poste", margin, y);
+
+      doc.setFont("Helvetica", "bold");
+      doc.setTextColor(100, 116, 139);
+      var rightText = (exp.company || "") + " | " + (exp.period || "");
+      doc.text(rightText, pageWidth - margin - doc.getTextWidth(rightText), y);
+      y += 4.5;
+
+      doc.setTextColor(30, 41, 59);
+      doc.setFont("Helvetica", "normal");
+      doc.setFontSize(baseFontSize);
+      var detailsArr = Array.isArray(exp.details) ? exp.details : [exp.details];
+      detailsArr.forEach(function(det){
+        if(!det) return;
+        var splitDet = doc.splitTextToSize("• " + det, contentWidth - 4);
+        doc.text(splitDet, margin + 4, y);
+        y += (splitDet.length * lineGap);
+      });
+      y += 3.5;
+    });
+
+    y += sectionGap - 3;
+
+    if(data.education && data.education.length){
+      renderSectionTitle("Formations & Diplômes");
+
+      data.education.forEach(function(edu){
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(baseFontSize + 0.5);
+        doc.setTextColor(15, 23, 42);
+        doc.text(edu.degree || "Diplôme", margin, y);
+
+        doc.setFont("Helvetica", "normal");
+        doc.setTextColor(100, 116, 139);
+        var edRight = (edu.school || "") + " (" + (edu.period || "") + ")";
+        doc.text(edRight, pageWidth - margin - doc.getTextWidth(edRight), y);
+        y += lineGap + 1.5;
+      });
+      y += sectionGap - 3;
+    }
+
+    renderSectionTitle("Compétences & Langues");
+
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(baseFontSize);
+    var hSkills = "• Savoir-faire : " + (data.hardSkills || []).join("  •  ");
+    var splitHard = doc.splitTextToSize(hSkills, contentWidth);
+    doc.text(splitHard, margin, y);
+    y += (splitHard.length * lineGap) + 1.5;
+
+    if(data.softSkills && data.softSkills.length){
+      var sSkills = "• Savoir-être : " + (data.softSkills || []).join("  •  ");
+      var splitSoft = doc.splitTextToSize(sSkills, contentWidth);
+      doc.text(splitSoft, margin, y);
+      y += (splitSoft.length * lineGap) + 1.5;
+    }
+
+    if(data.languages){
+      doc.text("• Langues : " + data.languages, margin, y);
+    }
+
+    doc.save("CV_" + (data.fullName||"Candidat").replace(/\s+/g,'_') + ".pdf");
+  }
+
+  function rCompanies(main){
+    main.innerHTML=
+      '<div class="head"><div><h2>Entreprises & Contacts</h2></div>'+
+      '<button class="btn prim sm" id="addCompBtn">+ Ajouter un contact</button></div>'+
+      '<div class="lst">'+STATE.companies.map(function(c){
+        return '<div class="row" style="cursor:default;"><div class="row-m">'+
+          '<div class="rn">'+esc(c.companyName)+' <span style="font-size:12px;color:var(--mu);">('+esc(c.contactName||'N/C')+')</span></div>'+
+          '<div class="rm">Email : '+esc(c.email||'N/C')+' · Tél : '+esc(c.phone||'N/C')+'</div>'+
+        '</div>'+
+        '<button class="btn dan sm" data-delcomp="'+esc(c.id)+'">Supprimer</button></div>';
+      }).join('')+(STATE.companies.length?'':'<p class="rm">Aucune entreprise enregistrée.</p>')+'</div>';
+
+    document.getElementById('addCompBtn').addEventListener('click',function(){
+      var co = prompt("Nom de l'entreprise :"); if(!co) return;
+      var ct = prompt("Nom du contact :"); var em = prompt("Email :"); var ph = prompt("Téléphone :");
+      apiPost('saveCompany', { id: uid(), companyName: co, contactName: ct, email: em, phone: ph }).then(function(){ refreshAll().then(shell); });
+    });
+
+    Array.prototype.forEach.call(document.querySelectorAll('[data-delcomp]'),function(b){
+      b.addEventListener('click',function(){
+        if(confirm('Supprimer cette entreprise ?')){
+          apiPost('deleteCompany',{id:b.getAttribute('data-delcomp')}).then(function(){ refreshAll().then(shell); });
+        }
+      });
+    });
+  }
+
+  function rArchives(main){ main.innerHTML='<div class="head"><h2>Archives & Promotions</h2></div><div class="card">Espace d\'archivage des anciennes promotions.</div>'; }
+
+  function rSettings(main){
+    var rncpDb = getRncpDatabase();
+    var creds = getAuthCredentials();
+
+    main.innerHTML=
+      '<div class="head"><h2>Clé API & Options</h2></div>'+
+      '<div class="card"><h3>Sécurité & Identifiants Administrateur</h3>'+
+        '<div class="fgrid" style="margin-bottom:12px;">'+
+          '<div class="fgroup"><label>Identifiant Admin</label><input type="text" id="inAdminUser" value="'+esc(creds.user)+'"></div>'+
+          '<div class="fgroup"><label>Mot de Passe Admin</label><input type="password" id="inAdminPass" value="'+esc(creds.pass)+'"></div>'+
+        '</div>'+
+        '<button class="btn prim sm" id="btnSaveAuth">Enregistrer les identifiants</button>'+
+      '</div>'+
+      '<div class="card"><h3>Clé API OpenAI</h3>'+
+        '<input type="password" id="inApiKey" value="'+esc(getApiKey())+'" placeholder="sk-proj-..." style="width:100%;margin-bottom:12px;">'+
+        '<button class="btn prim sm" id="btnSaveKey">Enregistrer la clé API</button>'+
+      '</div>'+
+      '<div class="card">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">'+
+          '<h3>Gestion des Spécialisations & Blocs de Compétences RNCP</h3>'+
+          '<button class="btn sm suc" id="btnAddSpecModal">+ Nouvelle Spécialisation</button>'+
+        '</div>'+
+        '<div class="lst">'+
+          Object.keys(rncpDb).map(function(k){
+            var item = rncpDb[k];
+            return '<div class="row" style="cursor:default;"><div class="row-m">'+
+              '<div class="rn">'+esc(item.name)+' <span class="chip ch-bl">'+esc(item.rncp)+'</span></div>'+
+              '<div class="rm">Titre officiel : <b>'+esc(item.title)+'</b> · '+(item.blocs||[]).length+' bloc(s) de compétences</div>'+
+            '</div>'+
+            '<div style="display:flex;gap:8px;">'+
+              '<button class="btn sm prim" data-editspec="'+esc(k)+'">Éditer / Blocs</button>'+
+              '<button class="btn sm dan" data-delspec="'+esc(k)+'">Supprimer</button>'+
+            '</div></div>';
+          }).join('')+
+        '</div>'+
+      '</div>';
+
+    document.getElementById('btnSaveAuth').addEventListener('click', function(){
+      setAuthCredentials(val('inAdminUser'), val('inAdminPass'));
+      alert('Identifiants administrateur sauvegardés.');
+    });
+
+    document.getElementById('btnSaveKey').addEventListener('click',function(){ setApiKey(val('inApiKey')); alert('Clé API enregistrée.'); });
+    
+    document.getElementById('btnAddSpecModal').addEventListener('click', function(){
+      openSpecEditModal(null);
+    });
+
+    Array.prototype.forEach.call(document.querySelectorAll('[data-editspec]'), function(b){
+      b.addEventListener('click', function(){
+        openSpecEditModal(b.getAttribute('data-editspec'));
+      });
+    });
+
+    Array.prototype.forEach.call(document.querySelectorAll('[data-delspec]'), function(b){
+      b.addEventListener('click', function(){
+        var k = b.getAttribute('data-delspec');
+        if(confirm("Supprimer définitivement cette spécialisation ?")){
+          delete rncpDb[k];
+          saveRncpDatabase(rncpDb);
+          rSettings(main);
+        }
+      });
+    });
+  }
+
+  function openSpecEditModal(specKey){
+    var rncpDb = getRncpDatabase();
+    var isEdit = !!specKey;
+    var specObj = isEdit ? rncpDb[specKey] : { rncp: "RNCP38605", name: "", title: "", blocs: [] };
+
+    var tempBlocs = JSON.parse(JSON.stringify(specObj.blocs || []));
+
+    function renderBlocsListHtml(){
+      return tempBlocs.map(function(b, idx){
+        return '<div style="background:#f8fafc;border:1px solid var(--ln);padding:12px;border-radius:10px;margin-bottom:10px;">'+
+          '<div style="display:flex;justify-content:space-between;margin-bottom:6px;">'+
+            '<strong style="font-size:13px;color:var(--bl);">Bloc #'+(idx+1)+' ('+esc(b.id)+')</strong>'+
+            '<button class="btn sm dan" style="padding:2px 6px;" data-removebloc="'+idx+'">✕</button>'+
+          '</div>'+
+          '<div class="fgrid">'+
+            '<div class="fgroup"><label>Code Bloc</label><input class="bloc-id-in" data-idx="'+idx+'" value="'+esc(b.id)+'"></div>'+
+            '<div class="fgroup"><label>Intitulé du bloc</label><input class="bloc-lbl-in" data-idx="'+idx+'" value="'+esc(b.label)+'"></div>'+
+            '<div class="fgroup full" style="grid-column: span 2;"><label>Détails / Périmètre</label><input class="bloc-det-in" data-idx="'+idx+'" value="'+esc(b.details||'')+ '"></div>'+
+            '<div class="fgroup full" style="grid-column: span 2;"><label>Mots-clés de validation (séparés par des virgules)</label><input class="bloc-kw-in" data-idx="'+idx+'" value="'+esc((b.keywords||[]).join(', '))+ '"></div>'+
+          '</div>'+
+        '</div>';
+      }).join('');
+    }
+
+    function syncCurrentInputs(){
+      document.querySelectorAll('.bloc-id-in').forEach(function(el){ tempBlocs[el.dataset.idx].id = el.value.trim(); });
+      document.querySelectorAll('.bloc-lbl-in').forEach(function(el){ tempBlocs[el.dataset.idx].label = el.value.trim(); });
+      document.querySelectorAll('.bloc-det-in').forEach(function(el){ tempBlocs[el.dataset.idx].details = el.value.trim(); });
+      document.querySelectorAll('.bloc-kw-in').forEach(function(el){ 
+        tempBlocs[el.dataset.idx].keywords = el.value.split(',').map(function(x){ return x.trim().toLowerCase(); }).filter(Boolean); 
+      });
+    }
+
+    function refreshModalBody(){
+      var html = 
+        '<div class="fgrid">'+
+          '<div class="fgroup"><label>Identifiant Technique (ex: luxe, rh, ia_data)</label><input id="sp_key" value="'+esc(specKey||'')+ '" '+(isEdit?'readonly style="background:#f1f5f9;"':'')+'></div>'+
+          '<div class="fgroup"><label>Code RNCP (ex: RNCP38605)</label><input id="sp_rncp" value="'+esc(specObj.rncp)+'"></div>'+
+          '<div class="fgroup full" style="grid-column: span 2;"><label>Nom de la Spécialisation</label><input id="sp_name" value="'+esc(specObj.name)+'"></div>'+
+          '<div class="fgroup full" style="grid-column: span 2;"><label>Titre Officiel certifié</label><input id="sp_title" value="'+esc(specObj.title)+'"></div>'+
+        '</div>'+
+        '<div class="card" style="margin-top:14px;">'+
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'+
+            '<h3>Blocs de Compétences associées ('+tempBlocs.length+')</h3>'+
+            '<button class="btn sm prim" id="btnAddBlocItem">+ Ajouter un bloc</button>'+
+          '</div>'+
+          '<div id="blocsContainer">'+renderBlocsListHtml()+'</div>'+
+        '</div>'+
+        '<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px;">'+
+          '<button class="btn suc sm" id="btnSaveSpec">Enregistrer la Spécialisation</button>'+
+        '</div>';
+
+      openModal(isEdit ? 'Édition Spécialisation : ' + specObj.name : 'Nouvelle Spécialisation RNCP', html);
+
+      document.getElementById('btnAddBlocItem').addEventListener('click', function(){
+        syncCurrentInputs();
+        tempBlocs.push({ id: 'BC0' + (tempBlocs.length + 1), label: '', details: '', keywords: [] });
+        refreshModalBody();
+      });
+
+      document.querySelectorAll('[data-removebloc]').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          syncCurrentInputs();
+          var i = parseInt(btn.dataset.removebloc);
+          tempBlocs.splice(i, 1);
+          refreshModalBody();
+        });
+      });
+
+      document.getElementById('btnSaveSpec').addEventListener('click', function(){
+        syncCurrentInputs();
+        var k = val('sp_key').toLowerCase().replace(/[^a-z0-9_]/g, '_');
+        var name = val('sp_name');
+        var rncp = val('sp_rncp');
+        var title = val('sp_title');
+
+        if(!k || !name){ alert("Veuillez renseigner un identifiant et un nom de spécialisation."); return; }
+
+        rncpDb[k] = {
+          rncp: rncp || "RNCP38605",
+          name: name,
+          title: title || name,
+          blocs: tempBlocs
+        };
+
+        saveRncpDatabase(rncpDb);
+        mWrap.classList.remove('open');
+        refreshAll().then(shell);
+      });
+    }
+
+    refreshModalBody();
+  }
+
+  function rRGPD(main){ 
+    main.innerHTML=
+      '<div class="head"><h2>RGPD & Protection des Données</h2></div>'+
+      '<div class="card">'+
+        '<h3>Conformité et gestion des données</h3>'+
+        '<p style="font-size:13px;color:var(--mu);margin-bottom:12px;">Le système enregistre le consentement lors de la collecte initiale.</p>'+
+        '<button class="btn dan sm" id="btnPurgeAll">Purger l\'intégralité des étudiants ('+STATE.students.length+')</button>'+
+      '</div>';
+    document.getElementById('btnPurgeAll').addEventListener('click', function(){
+      if(confirm("Confirmer la suppression irréversible de l'ensemble des dossiers ?")){ apiPost('purgeStudents', {}).then(function(){ refreshAll().then(shell); }); }
+    });
+  }
+
+  function rLinks(main){
+    var baseUrl = window.location.origin + window.location.pathname;
+    var studentLink = baseUrl + '?public_view=candidat';
+    var companyLink = baseUrl + '?public_view=entreprise';
+
+    main.innerHTML=
+      '<div class="head"><h2>Liens Publics d\'Importation</h2></div>'+
+      '<div class="card"><h3>1. Lien Candidat</h3>'+
+        '<div style="background:#f1f5f9;padding:12px;border-radius:8px;font-family:monospace;font-size:13px;word-break:break-all;">'+studentLink+'</div>'+
+        '<div style="margin-top:10px;display:flex;gap:10px;">'+
+          '<button class="btn sm prim" onclick="navigator.clipboard.writeText(\''+studentLink+'\');alert(\'Lien copié.\');">Copier le lien</button>'+
+          '<a href="'+studentLink+'" target="_blank" class="btn sm">Ouvrir le formulaire ↗</a>'+
+        '</div>'+
+      '</div>'+
+      '<div class="card"><h3>2. Lien Entreprise</h3>'+
+        '<div style="background:#f1f5f9;padding:12px;border-radius:8px;font-family:monospace;font-size:13px;word-break:break-all;">'+companyLink+'</div>'+
+        '<div style="margin-top:10px;display:flex;gap:10px;">'+
+          '<button class="btn sm prim" onclick="navigator.clipboard.writeText(\''+companyLink+'\');alert(\'Lien copié.\');">Copier le lien</button>'+
+          '<a href="'+companyLink+'" target="_blank" class="btn sm">Ouvrir le formulaire ↗</a>'+
+        '</div>'+
+      '</div>';
+  }
+
+  refreshAll().then(shell);
+}
+
+})();
+</script>
+</body>
+</html>
