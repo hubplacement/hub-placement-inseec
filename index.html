@@ -84,11 +84,9 @@ a { color: inherit; text-decoration: none; }
 .fc-rncp { font-size: 11px; font-weight: 700; color: var(--mu); margin-top: 4px; }
 .fc-cnt { font-size: 12px; color: var(--bl); font-weight: 700; margin-top: 14px; background: #eff6ff; padding: 5px 10px; border-radius: 8px; display: inline-block; width: fit-content; }
 
-.filters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; align-items: center; }
-.fi, .fi-sel { border: 1px solid var(--ln); background: #ffffff; border-radius: 9px; padding: 9px 14px; font-size: 13px; color: var(--tx); box-shadow: var(--sh); outline: none; transition: border-color 0.15s ease; }
-.fi:focus, .fi-sel:focus { border-color: var(--bl); }
-.fi { min-width: 220px; }
-.fi-sel { min-width: 150px; }
+.filters { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+.fi { border: 1px solid var(--ln); background: #ffffff; border-radius: 9px; padding: 9px 14px; font-size: 13px; color: var(--tx); box-shadow: var(--sh); outline: none; transition: border-color 0.15s ease; width: 100%; }
+.fi:focus { border-color: var(--bl); }
 
 .lst { display: flex; flex-direction: column; gap: 10px; }
 .row { background: var(--card); border: 1px solid var(--ln); border-radius: 12px; padding: 16px 20px; display: flex; gap: 16px; align-items: center; box-shadow: var(--sh); cursor: pointer; transition: all 0.15s ease; }
@@ -122,7 +120,7 @@ a { color: inherit; text-decoration: none; }
 .tab-btn.active { color: var(--bl); border-bottom-color: var(--bl); }
 
 .check-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
-.check-item { display: flex; align-items: center; gap: 6px; background: #f1f5f9; padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.check-item { display: flex; align-items: center; gap: 6px; background: #f1f5f9; padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid var(--ln); }
 .check-item input { cursor: pointer; }
 
 .score-badge { display: inline-flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; padding: 8px 14px; border-radius: 12px; min-width: 65px; text-align: center; }
@@ -187,6 +185,28 @@ function cleanLegacyTestData(){
   }
 }
 
+function cleanTextFormatting(text) {
+  if(!text) return '';
+  return String(text)
+    .replace(/\*\*\*/g, '')
+    .replace(/\*\*/g, '')
+    .replace(/\*/g, '')
+    .replace(/["«»]/g, '')
+    .replace(/#{1,6}\s?/g, '')
+    .trim();
+}
+
+function isDuplicateStudent(firstName, lastName, excludeId) {
+  var fn = (firstName || '').trim().toLowerCase();
+  var ln = (lastName || '').trim().toLowerCase();
+  var db = localDB();
+  return (db.students || []).some(function(s) {
+    if (excludeId && s.id === excludeId) return false;
+    if (s.status === 'Refusé') return false; 
+    return (s.firstName || '').trim().toLowerCase() === fn && (s.lastName || '').trim().toLowerCase() === ln;
+  });
+}
+
 function savePdfBlob(key, base64Data) {
   return new Promise(function(resolve) {
     if (!dbInstance || !key) { resolve(); return; }
@@ -224,147 +244,28 @@ function downloadTxtFile(filename, text) {
 }
 
 var DEFAULT_RNCP_DATABASE = {
-  "rh": {
-    rncp: "RNCP41797",
-    name: "Chargé des Ressources Humaines",
-    title: "Chargé des Ressources Humaines",
-    blocs: [
-      { id: "BC01", label: "Assurer la conformité des processus RH", details: "Gestion administrative, rédaction de contrats, paie, reporting et People Analytics", keywords: ["paie", "déclaration", "contrat", "rgpd", "juridique", "sirh", "tableau de bord", "reporting", "données"] },
-      { id: "BC02", label: "Recruter et gérer les talents", details: "Sourcing, entretiens, parcours d'intégration (onboarding), fidélisation et GEPP", keywords: ["recrutement", "sourcing", "entretien", "onboarding", "intégration", "talents", "fidélisation", "marque employeur"] },
-      { id: "BC03", label: "Développer les compétences du personnel", details: "Plan de développement des compétences, gestion des formations, OPCO et ingénierie de formation", keywords: ["formation", "compétences", "gepp", "entretiens", "opco", "plan de développement", "coaching"] },
-      { id: "BC04", label: "Dynamiser les relations sociales", details: "Animation des IRP (CSE), dialogue social, qualité de vie au travail (QVT) et gestion des RPS", keywords: ["irp", "cse", "dialogue social", "climat social", "rps", "conflit", "médiation"] }
-    ]
-  },
-  "finance": {
-    rncp: "RNCP39875",
-    name: "Finance d’Entreprise",
-    title: "Responsable en gestion financière",
-    blocs: [
-      { id: "BC01", label: "Participer à la mise en œuvre de la stratégie financière", details: "Analyse financière, prévisionnels, budgets et communication financière", keywords: ["stratégie", "analyse financière", "prévisionnel", "trésorerie", "budget"] },
-      { id: "BC02", label: "Réaliser les travaux comptables et le suivi de trésorerie", details: "Clôtures comptables, suivi du BFR, gestion des flux de trésorerie et relations bancaires", keywords: ["comptabilité", "clôture", "bilan", "compte de résultat", "trésorerie", "liquidités"] },
-      { id: "BC03", label: "Assurer la gestion administrative, juridique et fiscale", details: "Déclarations fiscales (TVA, IS), veille juridique et conformité", keywords: ["fiscalité", "tva", "juridique", "consolidation", "conformité"] },
-      { id: "BC04", label: "Missions de contrôle de gestion", details: "Calcul des coûts, définition des KPI et élaboration des tableaux de bord de gestion", keywords: ["contrôle de gestion", "coûts", "kpi", "tableau de bord", "rentabilité"] }
-    ]
-  },
-  "banque": {
-    rncp: "RNCP39875",
-    name: "Banque & Assurance",
-    title: "Responsable en gestion financière",
-    blocs: [
-      { id: "BC01", label: "Conseil et gestion de portefeuilles clients", details: "Analyse des besoins bancaires/assurance, instruction des crédits et gestion des risques", keywords: ["banque", "assurance", "crédit", "risque", "portefeuille", "épargne", "patrimoine"] },
-      { id: "BC02", label: "Opérations financières et trésorerie", details: "Gestion des produits financiers, placements et gestion des flux", keywords: ["trésorerie", "placements", "flux", "arbitrage", "produits financiers"] },
-      { id: "BC03", label: "Conformité réglementaire bancaire", details: "Respect des normes ACPR, LCB-FT, MIF2 et réglementation assurantielle", keywords: ["conformité", "acpr", "lcb-ft", "mif2", "réglementation", "droit bancaire"] }
-    ]
-  },
-  "intl": {
-    rncp: "RNCP38604",
-    name: "Activités Commerciales à l'International",
-    title: "Responsable des activités commerciales",
-    blocs: [
-      { id: "BC01", label: "Stratégie de développement commercial", details: "Étude de marché export, diagnostic SWOT et réseaux de distribution", keywords: ["export", "import", "international", "étude de marché", "swot", "distribution"] },
-      { id: "BC02", label: "Plan commercial omnicanal", keywords: ["prospection", "fidélisation", "négociation", "parcours client"] },
-      { id: "BC03", label: "Pilotage budgétaire commercial", keywords: ["budget", "rentabilité", "marge", "kpi"] },
-      { id: "BC04", label: "Management d'équipe commerciale", keywords: ["management", "équipe", "objectifs", "animation"] },
-      { id: "BC05", label: "Développement international & douanes", details: "Incoterms, procédures douanières, contrats internationaux et négociation en anglais", keywords: ["international", "export", "import", "douane", "incoterms", "anglais"] }
-    ]
-  },
-  "luxe": {
-    rncp: "RNCP38604",
-    name: "Luxe & Maison de Haute Couture",
-    title: "Responsable des activités commerciales",
-    blocs: [
-      { id: "BC01", label: "Stratégie commerciale sectorielle", keywords: ["veille", "marché du luxe", "positionnement"] },
-      { id: "BC02", label: "Relation client et parcours haut de gamme", keywords: ["expérience client", "fidélisation", "vip"] },
-      { id: "BC03", label: "Pilotage budgétaire commercial", keywords: ["budget", "rentabilité", "kpi"] },
-      { id: "BC04", label: "Management d'équipe de vente Luxe", keywords: ["management", "excellence", "coaching"] },
-      { id: "BC05", label: "Codes et excellence du secteur du Luxe", details: "Storytelling, codes de l'excellence, négociation VIP et ambassade de marque", keywords: ["luxe", "excellence", "vip", "codes du luxe", "ambassadeur"] }
-    ]
-  },
-  "sport": {
-    rncp: "RNCP38604",
-    name: "Sport Business",
-    title: "Responsable des activités commerciales",
-    blocs: [
-      { id: "BC01", label: "Stratégie commerciale Sport Business", details: "Partenariats sportifs, droits TV, billetterie et sponsoring", keywords: ["sport", "sponsor", "sponsoring", "partenariat", "billetterie", "fan experience"] },
-      { id: "BC02", label: "Plan de développement commercial", keywords: ["hospitalités", "événement sportif", "activation", "stade"] },
-      { id: "BC03", label: "Pilotage des budgets commerciaux", keywords: ["budget", "revenus", "merchandising", "marge"] }
-    ]
-  },
-  "startup": {
-    rncp: "RNCP38604",
-    name: "Business Développement & Start-Up",
-    title: "Responsable des activités commerciales",
-    blocs: [
-      { id: "BC01", label: "Stratégie commerciale & Prospection B2B", keywords: ["prospection", "lean startup", "b2b", "vente directe"] },
-      { id: "BC02", label: "Développement des partenariats et levée de fonds", keywords: ["pitch", "croissance", "partenaires", "investisseurs"] }
-    ]
-  },
-  "ia_data": {
-    rncp: "RNCP38605",
-    name: "Marketing Digital — IA & Data",
-    title: "Responsable de projet marketing communication",
-    blocs: [
-      { id: "BC01", label: "Définition de la stratégie marketing", keywords: ["audit marketing", "stratégie", "plan de communication"] },
-      { id: "BC02", label: "Conception et déploiement de projets marketing", keywords: ["gestion de projet", "cahier des charges", "plan média"] },
-      { id: "BC03", label: "Gestion budgétaire et mesure du ROI", keywords: ["budget", "roi", "kpi", "suivi"] },
-      { id: "BC04", label: "Management d'équipe projet", keywords: ["équipe", "planning", "coordination"] },
-      { id: "BC05", label: "Actions Marketing Digital, IA & Analytics", details: "Intégration d'outils IA, analyse de la data client, automation et campagnes d'acquisition web", keywords: ["ia", "intelligence artificielle", "data", "analytics", "crm", "automation"] }
-    ]
-  },
-  "mkt_web": {
-    rncp: "RNCP38605",
-    name: "Marketing Digital — Web Marketing",
-    title: "Responsable de projet marketing communication",
-    blocs: [
-      { id: "BC01", label: "Stratégie d'Acquisition Web", keywords: ["seo", "sea", "sem", "growth marketing", "conversion", "lead"] }
-    ]
-  },
-  "mkt_cm": {
-    rncp: "RNCP38605",
-    name: "Marketing Digital — Community Management & Social Media",
-    title: "Responsable de projet marketing communication",
-    blocs: [
-      { id: "BC01", label: "Gestion des réseaux sociaux et stratégie d'engagement", keywords: ["instagram", "tiktok", "community manager", "social media", "smo", "contenu"] }
-    ]
-  },
-  "produit": {
-    rncp: "RNCP38605",
-    name: "Développement de Produits",
-    title: "Responsable de projet marketing communication",
-    blocs: [
-      { id: "BC01", label: "Stratégie marketing produit", keywords: ["veille", "étude de marché", "audit"] },
-      { id: "BC02", label: "Gestion de projet de développement", keywords: ["cahier des charges", "planning", "roadmap"] },
-      { id: "BC03", label: "Budget et rentabilité produit", keywords: ["budget", "suivi", "marge"] },
-      { id: "BC04", label: "Management d'équipe projet", keywords: ["coordination", "équipe", "agile"] },
-      { id: "BC05", label: "Conception et lancement de nouveaux produits", details: "Packaging, UX, design, positionnement et stratégie de lancement", keywords: ["produit", "concept", "storytelling", "packaging", "design", "ux", "lancement"] }
-    ]
-  },
-  "evenementiel": {
-    rncp: "RNCP38605",
-    name: "Marketing Communication Événementielle",
-    title: "Responsable de projet marketing communication",
-    blocs: [
-      { id: "BC01", label: "Définition de la stratégie de communication", keywords: ["veille", "étude de marché"] },
-      { id: "BC02", label: "Conception et déploiement de projet", keywords: ["plan média", "communication", "réseaux sociaux"] },
-      { id: "BC03", label: "Gestion budgétaire et prestataires", keywords: ["budget", "devis", "prestataires"] },
-      { id: "BC04", label: "Management d'équipe en mode projet", keywords: ["équipe", "coordination", "logistique"] },
-      { id: "BC05", label: "Concevoir et mettre en œuvre un événement", details: "Scénarisation, sécurité, régie technique, logistique et relations presse", keywords: ["événement", "événementiel", "sécurité", "prestataires", "sponsoring", "roadmap", "logistique"] }
-    ]
-  }
+  "rh": { rncp: "RNCP41797", name: "Chargé des Ressources Humaines", title: "Chargé des Ressources Humaines", blocs: [{ id: "BC01", label: "Assurer la conformité des processus RH", details: "Gestion administrative, paie, reporting", keywords: ["paie", "contrat", "rgpd", "sirh"] }] },
+  "finance": { rncp: "RNCP39875", name: "Finance d’Entreprise", title: "Responsable en gestion financière", blocs: [{ id: "BC01", label: "Analyse financière", details: "Analyse, budgets", keywords: ["analyse financière", "budget", "trésorerie"] }] },
+  "banque": { rncp: "RNCP39875", name: "Banque & Assurance", title: "Responsable en gestion financière", blocs: [{ id: "BC01", label: "Conseil bancaire", details: "Gestion de portefeuilles", keywords: ["banque", "crédit", "assurance"] }] },
+  "intl": { rncp: "RNCP38604", name: "Activités Commerciales à l'International", title: "Responsable des activités commerciales", blocs: [{ id: "BC01", label: "Développement international", keywords: ["export", "import", "international"] }] },
+  "luxe": { rncp: "RNCP38604", name: "Luxe & Maison de Haute Couture", title: "Responsable des activités commerciales", blocs: [{ id: "BC01", label: "Excellence du Luxe", keywords: ["luxe", "excellence", "vip"] }] },
+  "sport": { rncp: "RNCP38604", name: "Sport Business", title: "Responsable des activités commerciales", blocs: [{ id: "BC01", label: "Sponsoring sportif", keywords: ["sport", "sponsor", "billetterie"] }] },
+  "startup": { rncp: "RNCP38604", name: "Business Développement & Start-Up", title: "Responsable des activités commerciales", blocs: [{ id: "BC01", label: "Prospection B2B", keywords: ["prospection", "pitch", "b2b"] }] },
+  "ia_data": { rncp: "RNCP38605", name: "Marketing Digital — IA & Data", title: "Responsable de projet marketing communication", blocs: [{ id: "BC01", label: "Marketing IA & Analytics", keywords: ["ia", "data", "analytics", "crm"] }] },
+  "mkt_web": { rncp: "RNCP38605", name: "Marketing Digital — Web Marketing", title: "Responsable de projet marketing communication", blocs: [{ id: "BC01", label: "Acquisition Web", keywords: ["seo", "sea", "growth marketing"] }] },
+  "mkt_cm": { rncp: "RNCP38605", name: "Marketing Digital — Community Management & Social Media", title: "Responsable de projet marketing communication", blocs: [{ id: "BC01", label: "Réseaux Sociaux", keywords: ["instagram", "tiktok", "community manager"] }] },
+  "produit": { rncp: "RNCP38605", name: "Développement de Produits", title: "Responsable de projet marketing communication", blocs: [{ id: "BC01", label: "Gestion Produit", keywords: ["produit", "ux", "packaging"] }] },
+  "evenementiel": { rncp: "RNCP38605", name: "Marketing Communication Événementielle", title: "Responsable de projet marketing communication", blocs: [{ id: "BC01", label: "Logistique Événementielle", keywords: ["événement", "logistique", "sponsoring"] }] }
 };
 
 function getRncpDatabase() {
   try {
     var custom = localStorage.getItem('hub_rncp_database');
     return custom ? JSON.parse(custom) : DEFAULT_RNCP_DATABASE;
-  } catch(e) {
-    return DEFAULT_RNCP_DATABASE;
-  }
+  } catch(e) { return DEFAULT_RNCP_DATABASE; }
 }
 
-function saveRncpDatabase(dbObj) {
-  localStorage.setItem('hub_rncp_database', JSON.stringify(dbObj));
-}
+function saveRncpDatabase(dbObj) { localStorage.setItem('hub_rncp_database', JSON.stringify(dbObj)); }
 
 function getCustomSpecs(){
   var db = getRncpDatabase();
@@ -373,14 +274,13 @@ function getCustomSpecs(){
   });
 }
 
-var BASE_STATUSES = ['À valider','Refusé','Actif','Nouveau','En recherche','Candidature envoyée','Entretien en cours','Placé','Peu actif','Inactif','Archivé'];
+var BASE_STATUSES = ['À valider','Actif','En recherche','Candidature envoyée','Entretien en cours','Placé','Peu actif','Inactif','Archivé'];
 var OFFER_STATUSES = ['À traiter','En cours','Traité','Fermée'];
 
 function getApiKey(){ return localStorage.getItem('hub_openai_key') || ''; }
 function setApiKey(k){ localStorage.setItem('hub_openai_key', k); }
 function getCustomStatuses(){ try{ return JSON.parse(localStorage.getItem('hubStatuses')||'null')||BASE_STATUSES; }catch(e){ return BASE_STATUSES; } }
 
-/* Vos identifiants configurés */
 function getAuthCredentials(){
   return {
     user: localStorage.getItem('hub_admin_user') || 'hub.alternance',
@@ -391,12 +291,8 @@ function setAuthCredentials(u, p){
   if(u) localStorage.setItem('hub_admin_user', u);
   if(p) localStorage.setItem('hub_admin_pass', p);
 }
-function isSessionAuthenticated(){
-  return sessionStorage.getItem('hub_auth_session') === 'true';
-}
-function setSessionAuth(val){
-  sessionStorage.setItem('hub_auth_session', val ? 'true' : 'false');
-}
+function isSessionAuthenticated(){ return sessionStorage.getItem('hub_auth_session') === 'true'; }
+function setSessionAuth(val){ sessionStorage.setItem('hub_auth_session', val ? 'true' : 'false'); }
 
 function uid(){ return 'id_'+Math.random().toString(36).slice(2)+Date.now().toString(36); }
 
@@ -410,7 +306,7 @@ function esc(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g,function(
 function val(id){ var el=document.getElementById(id); return el?el.value.trim():''; }
 
 function statusChip(s){
-  var m={Placé:'ch-gr',Archivé:'ch-gy','Candidature envoyée':'ch-ye','Entretien en cours':'ch-pu','En recherche':'ch-bl','À valider':'ch-or',Refusé:'ch-re',Nouveau:'ch-dk',Actif:'ch-bl','Peu actif':'ch-ye',Inactif:'ch-re','À traiter':'ch-or','En cours':'ch-ye','Traité':'ch-gr','Fermée':'ch-re'};
+  var m={Placé:'ch-gr',Archivé:'ch-gy','Candidature envoyée':'ch-ye','Entretien en cours':'ch-pu','En recherche':'ch-bl','À valider':'ch-or',Refusé:'ch-re',Actif:'ch-bl','Peu actif':'ch-ye',Inactif:'ch-re','À traiter':'ch-or','En cours':'ch-ye','Traité':'ch-gr','Fermée':'ch-re'};
   return '<span class="chip '+(m[s]||'ch-dk')+'">'+esc(s||'À valider')+'</span>';
 }
 
@@ -435,9 +331,7 @@ function extractPdfText(file){
         for(var i=1; i<=count; i++){
           p = (function(pageNo){
             return p.then(function(){
-              return pdf.getPage(pageNo).then(function(pg){
-                return pg.getTextContent();
-              }).then(function(tc){
+              return pdf.getPage(pageNo).then(function(pg){ return pg.getTextContent(); }).then(function(tc){
                 pages.push(tc.items.map(function(it){ return it.str; }).join(' '));
               });
             });
@@ -473,7 +367,7 @@ function parseCVWithAI(pdfText, fileName){
   var prompt = "Tu es un assistant RH d'élite pour INSEEC Bachelor. Extrais avec une précision absolue les données de ce CV :\n\n" +
                 "TEXTE DU CV :\n" + pdfText + "\n\n" +
                 "Liste des Spécialités valides : " + specsList + ".\n\n" +
-                "Format JSON strictement obligatoire :\n" +
+                "Format JSON strictly obligatoire :\n" +
                 "{\n" +
                 "  \"firstName\": \"Prénom de l'étudiant\",\n" +
                 "  \"lastName\": \"Nom de famille\",\n" +
@@ -501,17 +395,24 @@ function callAIDeepAuditCV(studentText, reasonText){
   var apiKey = getApiKey();
   if(!apiKey) return Promise.resolve({ internalAnalysis: "Diagnostic IA indisponible (Absence de clé API)", studentEmail: "Bonjour,\n\nMerci de revoir votre CV et de le mettre à jour." });
 
-  var prompt = "Tu es le Directeur du Bureau des Carrières INSEEC Bachelor. Effectue une analyse RH de très haut niveau sur ce CV.\n\n" +
-                 "CONSIGNES ULTRA-STRICTES ET DÉVELOPPÉES :\n" +
-                 "1. Développe en détail chaque point. Ne te contente pas de phrases courtes.\n" +
-                 "2. Analyse la lisibilité ATS, l'impact des verbes d'action, la hiérarchie visuelle et l'adéquation au marché du travail.\n" +
-                 "3. Le mail envoyé à l'étudiant doit être HYPER DÉVELOPPÉ, extrêmement constructif, chaleureux mais direct, structuré étape par étape (Titre, Accroche, Verbes d'action, Mots-clés ATS manquants, Projets, Mise en page).\n\n" +
+  var prompt = "Tu es le Directeur du Bureau des Carrières INSEEC Bachelor, Expert en recrutement d'alternants.\n" +
+                 "Effectue une analyse RH ultra-pédagogique, complète et bienveillante sur le CV d'un étudiant dont la candidature a été mise de côté pour révision.\n\n" +
+                 "RÈGLES STRICTES DE FORMATAGE :\n" +
+                 "1. Ne mets AUCUN marqueur Markdown (Pas de **, pas de ***, pas de dièses #, pas de guillemets bizarres).\n" +
+                 "2. Le mail destiné à l'étudiant doit être EXPERT, TRÈS DÉTAILLÉ, CONSTRUCTIF et orienté SOLUTIONS.\n" +
+                 "3. Tu dois guider l'étudiant pas à pas en lui donnant TOUS les conseils et pistes possibles sans rien inventer sur son parcours, mais en l'aidant à mieux valoriser ce qu'il a déjà fait.\n" +
+                 "4. Structure le mail ainsi :\n" +
+                 "   - Introduction encourageante du Bureau des Carrières INSEEC.\n" +
+                 "   - Section 1 : Structure & Lisibilité globale (Format ATS, hiérarchie visuelle, clarté des rubriques).\n" +
+                 "   - Section 2 : Analyse du Titre & Compétences (Comment rendre son titre percutant et valoriser ses savoir-faire / outils).\n" +
+                 "   - Section 3 : Optimisation des Expériences (Expliciter la tournure des phrases, ajouter des résultats/chiffres, utiliser des verbes d'action).\n" +
+                 "   - Section 4 : Recommandations spécifiques de l'administration (" + (reasonText || "Optimisation globale pour séduire les recruteurs") + ").\n" +
+                 "   - Conclusion motiver pour qu'il re-dépose sa nouvelle version au plus vite.\n\n" +
                  "CV DE L'ÉTUDIANT :\n" + studentText + "\n\n" +
-                 "INSTRUCTIONS DE L'ADMINISTRATION :\n" + (reasonText || "Mise en conformité et optimisation d'impact") + "\n\n" +
                  "Format JSON obligatoire :\n" +
                  "{\n" +
-                 "  \"internalAnalysis\": \"[ANALYSE RH INTERNE DÉTAILLÉE SUR PLUSIEURS PARAGRAPHES]\\n- Audit de structure et parsing ATS\\n- Évaluation fine des verbes d'action et éléments chiffrés\\n- Analyse des mots-clés sectoriels manquants\\n- Recommandations d'accompagnement par le Bureau des Carrières...\",\n" +
-                 "  \"studentEmail\": \"Bonjour [Prénom],\\n\\nLe Bureau des Carrières INSEEC Bachelor a étudié avec une attention particulière votre CV. Afin de maximiser vos chances auprès de nos entreprises partenaires, des ajustements majeurs sont nécessaires avant validation finale.\\n\\nVoici votre feuille de route détaillée :\\n\\n1. TITRE ET ACCROCHE STRATÉGIQUE :\\n...\\n\\n2. REFORMULATION DES EXPÉRIENCES (Impact, Chiffres et Verbes d'Action) :\\n...\\n\\n3. MOTS-CLÉS TECHNIQUES ET OUTILS ENSEIGNÉS À L'INSEEC :\\n...\\n\\n4. STRUCTURE ET OPTIMISATION POUR LES LOGICIELS ATS :\\n...\\n\\nMerci de nous renvoyer votre CV mis à jour d'ici 48h.\\n\\nBien cordialement,\\nLe Bureau des Carrières INSEEC Bachelor\"\n" +
+                 "  \"internalAnalysis\": \"ANALYSE RH INTERNE DÉTAILLÉE EN TEXTE BRUT SANS MARKDOWN\",\n" +
+                 "  \"studentEmail\": \"MAIL STRUCTURÉ, DÉTAILLÉ ET PEDAGOGIQUE POUR L'ÉTUDIANT SANS MARKDOWN\"\n" +
                  "}";
 
   return fetch("https://api.openai.com/v1/chat/completions", {
@@ -523,7 +424,13 @@ function callAIDeepAuditCV(studentText, reasonText){
       messages: [{ role: "user", content: prompt }],
       response_format: { type: "json_object" }
     })
-  }).then(function(r){ return r.json(); }).then(function(d){ return JSON.parse(d.choices[0].message.content); }).catch(function(){
+  }).then(function(r){ return r.json(); }).then(function(d){ 
+    var res = JSON.parse(d.choices[0].message.content);
+    return {
+      internalAnalysis: cleanTextFormatting(res.internalAnalysis),
+      studentEmail: cleanTextFormatting(res.studentEmail)
+    };
+  }).catch(function(){
     return { internalAnalysis: "Erreur d'analyse OpenAI", studentEmail: "Veuillez mettre votre CV à jour." };
   });
 }
@@ -532,7 +439,7 @@ function callAIOptimizeCVFull(studentText, offerText){
   var apiKey = getApiKey();
   if(!apiKey) return Promise.reject("Clé API absente.");
 
-  var prompt = "Tu es un expert en ingénierie de CV ATS. Classe impérativement toutes les expériences et formations en CHRONOLOGIE INVERSE STRICTE.\n\n" +
+  var prompt = "Tu es un expert en ingénierie de CV ATS. Classe impérativement toutes les expériences et formations en CHRONOLOGIE INVERSE STRICTE. Rédige tout en texte brut parfait sans aucun symbole markdown.\n\n" +
                  "CV TEXTE :\n" + studentText + "\n\n" +
                  "OFFRE CIBLÉE :\n" + (offerText || "Business Development / Management") + "\n\n" +
                  "JSON Format :\n" +
@@ -564,15 +471,15 @@ function callAIMatchingDetailed(studentText, offerText){
   var apiKey = getApiKey();
   if(!apiKey) return Promise.resolve({ score: 65, positives: ["Spécialité conforme"], negatives: ["Clé API absente pour audit fin"], verdict: "Analyse automatique de correspondance standard." });
 
-  var prompt = "Tu es un DRH d'entreprise et un Expert Recrutement pour l'INSEEC. Évalue avec une rigueur absolue et un très haut niveau de détail l'adéquation entre ce candidat et l'offre d'emploi.\n\n" +
+  var prompt = "Tu es un DRH d'entreprise et un Expert Recrutement pour l'INSEEC. Évalue avec une rigueur absolue et un très haut niveau de détail l'adéquation entre ce candidat et l'offre d'emploi.\n Ne mets aucun symbole Markdown (** ou ***) dans tes réponses.\n\n" +
                  "CV CANDIDAT :\n" + studentText + "\n\n" +
                  "OFFRE D'EMPLOI :\n" + offerText + "\n\n" +
                  "Format JSON obligatoire :\n" +
                  "{\n" +
                  "  \"score\": 85,\n" +
-                 "  \"positives\": [\"Point fort détaillé 1\", \"Point fort détaillé 2\", \"Point fort détaillé 3\"],\n" +
-                 "  \"negatives\": [\"Point de vigilance détaillé 1\", \"Axe d'amélioration ou manque identifié\"],\n" +
-                 "  \"verdict\": \"Synthèse RH très complète, argumentée et détaillée sur le potentiel du candidat pour ce poste spécifique.\"\n" +
+                 "  \"positives\": [\"Point fort détaillé 1\", \"Point fort détaillé 2\"],\n" +
+                 "  \"negatives\": [\"Point de vigilance détaillé 1\"],\n" +
+                 "  \"verdict\": \"Synthèse RH très complète, argumentée et détaillée sur le potentiel du candidat pour ce poste spécifique en texte brut.\"\n" +
                  "}";
 
   return fetch("https://api.openai.com/v1/chat/completions", {
@@ -584,7 +491,15 @@ function callAIMatchingDetailed(studentText, offerText){
       messages: [{ role: "user", content: prompt }],
       response_format: { type: "json_object" }
     })
-  }).then(function(r){ return r.json(); }).then(function(d){ return JSON.parse(d.choices[0].message.content); }).catch(function(){
+  }).then(function(r){ return r.json(); }).then(function(d){ 
+    var res = JSON.parse(d.choices[0].message.content);
+    return {
+      score: res.score || 70,
+      positives: (res.positives || []).map(cleanTextFormatting),
+      negatives: (res.negatives || []).map(cleanTextFormatting),
+      verdict: cleanTextFormatting(res.verdict)
+    };
+  }).catch(function(){
     return { score: 50, positives: ["Profil analysé"], negatives: ["Erreur de traitement IA"], verdict: "Incomplet." };
   });
 }
@@ -599,9 +514,7 @@ function localDB(){
   }
 }
 
-function saveDB(db){
-  localStorage.setItem('hubDB', JSON.stringify(db));
-}
+function saveDB(db){ localStorage.setItem('hubDB', JSON.stringify(db)); }
 
 function apiGet(action){
   var db=localDB();
@@ -732,6 +645,11 @@ function renderPublicStudentForm(){
 
     if(!fn || !ln || !em || !fileIn){ alert('Veuillez remplir les champs obligatoires et joindre un CV.'); return; }
 
+    if(isDuplicateStudent(fn, ln)) {
+      alert("❌ Saisie impossible : Une fiche active existe déjà pour " + fn + " " + ln + ".");
+      return;
+    }
+
     statusEl.textContent = 'Envoi et analyse de votre dossier en cours...';
     var stId = uid();
     var b64 = await fileToBase64(fileIn);
@@ -849,7 +767,7 @@ function renderAdmin(){
     tab:'dashboard',loading:true,
     folderStudents:{mode:'root',spec:'',status:''},
     offerFilter:{search:'',status:'À traiter',specialite:''},
-    studentFilter:{search:'',status:'',specialite:'',promo:''}
+    studentFilter:{search:'',statuses:[],specs:[]}
   };
 
   function refreshAll(){
@@ -865,12 +783,13 @@ function renderAdmin(){
       {id:'dashboard',label:'Tableau de bord',icon:'📊'},
       {id:'import_cv',label:'Import CVs',icon:'📥'},
       {id:'validation',label:'À valider',icon:'✅',count:function(){return STATE.students.filter(function(s){return s.status==='À valider';}).length;}},
+      {id:'rejected_students',label:'CV Refusés / À corriger',icon:'⚠️',count:function(){return STATE.students.filter(function(s){return s.status==='Refusé';}).length;}},
       {id:'offers',label:'Offres d\'emploi',icon:'🏢',count:function(){return STATE.offers.filter(function(o){return o.status==='À traiter';}).length;}},
       {id:'companies',label:'Entreprises & Contacts',icon:'📇'}
     ]},
     {s:'ÉTUDIANTS',items:[
       {id:'student_folders',label:'Dossiers Filières',icon:'📁'},
-      {id:'all_students',label:'Tous les étudiants',icon:'🎓'}
+      {id:'all_students',label:'Tous les étudiants (Actifs)',icon:'🎓'}
     ]},
     {s:'OUTILS IA & RNCP',items:[
       {id:'rncp_analyzer',label:'Analyseur d\'Éligibilité RNCP',icon:'⚖️'},
@@ -880,7 +799,7 @@ function renderAdmin(){
     ]},
     {s:'CONFIG & RGPD',items:[
       {id:'settings',label:'Clé API & Options',icon:'⚙️'},
-      {id:'rgpd',label:'RGPD & Purges',icon:'🔒'},
+      {id:'rgpd',label:'RGPD & Conformité des données',icon:'🔒'},
       {id:'links',label:'Liens publics d\'import',icon:'🔗'}
     ]}
   ];
@@ -932,6 +851,7 @@ function renderAdmin(){
     if(STATE.tab==='dashboard') rDashboard(main);
     else if(STATE.tab==='import_cv') rImportCV(main);
     else if(STATE.tab==='validation') rValidation(main);
+    else if(STATE.tab==='rejected_students') rRejectedStudents(main);
     else if(STATE.tab==='offers') rOffers(main);
     else if(STATE.tab==='companies') rCompanies(main);
     else if(STATE.tab==='student_folders') rStudentFolders(main);
@@ -946,9 +866,10 @@ function renderAdmin(){
   }
 
   function rDashboard(main){
+    var activeSts = STATE.students.filter(function(s){ return s.status !== 'Refusé'; });
     main.innerHTML='<h2>Tableau de bord</h2><p class="head-sub">Synthèse de l\'activité du Hub Alternance</p><div class="card" style="margin-top:16px;">'
       +'<div class="kpis">'
-      +'<div class="card kpi"><b>'+STATE.students.length+'</b><small>Étudiants</small></div>'
+      +'<div class="card kpi"><b>'+activeSts.length+'</b><small>Étudiants actifs</small></div>'
       +'<div class="card kpi"><b>'+STATE.offers.length+'</b><small>Offres enregistrées</small></div>'
       +'<div class="card kpi"><b>'+STATE.offers.filter(function(o){return o.status==='À traiter';}).length+'</b><small>Offres à traiter</small></div>'
       +'<div class="card kpi"><b>'+STATE.students.filter(function(s){return s.status==='Placé';}).length+'</b><small>Placés</small></div>'
@@ -980,18 +901,26 @@ function renderAdmin(){
         var file = files[i];
         statusEl.textContent = 'Extraction IA & Remplissage (' + (i + 1) + '/' + total + ') : ' + file.name + '...';
 
+        var txt = await extractPdfText(file);
+        var parsed = await parseCVWithAI(txt, file.name);
+
+        var firstName = parsed.firstName || 'Candidat';
+        var lastName = parsed.lastName || 'Importé';
+
+        if(isDuplicateStudent(firstName, lastName)) {
+          alert("❌ IMPORTATION IMPOSSIBLE pour (" + file.name + ") :\nUne fiche active existe déjà au nom de " + firstName + " " + lastName + ".");
+          continue;
+        }
+
         var stId = uid();
         try {
           var b64 = await fileToBase64(file);
           await savePdfBlob(stId + '_cv1', b64);
-          var txt = await extractPdfText(file);
-
-          var parsed = await parseCVWithAI(txt, file.name);
 
           var newStudent = {
             id: stId,
-            firstName: parsed.firstName || 'Candidat',
-            lastName: parsed.lastName || 'Importé',
+            firstName: firstName,
+            lastName: lastName,
             email: parsed.email || '',
             phone: parsed.phone || '',
             specialite: parsed.specialite || 'Finance d’Entreprise',
@@ -1010,7 +939,7 @@ function renderAdmin(){
         }
       }
 
-      statusEl.textContent = 'Importation et extraction terminées ! Redirection vers la liste à valider...';
+      statusEl.textContent = 'Importation terminée ! Redirection...';
       await refreshAll();
       STATE.tab = 'validation';
       shell();
@@ -1028,7 +957,7 @@ function renderAdmin(){
           '<div class="rm">✉️ '+(esc(s.email)||'Email N/C')+' · 📞 '+(esc(s.phone)||'Tél N/C')+' · Spécialité : <b>'+esc(s.specialite||'N/C')+'</b></div>'+
         '</div>'+
         '<div class="ha">'+
-          '<button class="btn dan sm" data-rej="'+esc(s.id)+'">Refuser & Envoyer Mail</button>'+
+          '<button class="btn dan sm" data-rej="'+esc(s.id)+'">Refuser & Conseils IA</button>'+
           '<button class="btn suc sm" data-vld="'+esc(s.id)+'">Valider</button>'+
         '</div>'+
         '</div>';
@@ -1060,24 +989,47 @@ function renderAdmin(){
     });
   }
 
+  function rRejectedStudents(main){
+    var rejected = STATE.students.filter(function(s){ return s.status === 'Refusé'; });
+
+    main.innerHTML = 
+      '<div class="head"><div><h2>CV Refusés / En révision ('+rejected.length+')</h2><p class="head-sub">Ces étudiants ont reçu leurs conseils d\'optimisation. Ils sont autorisés à redéposer leur CV à tout moment.</p></div></div>'+
+      (rejected.length === 0 ? '<div class="card">Aucun étudiant au statut Refusé.</div>' :
+      '<div class="lst">'+rejected.map(function(s){
+        return '<div class="row" data-openst="'+esc(s.id)+'"><div class="row-m">'+
+          '<div class="rn">'+esc(s.firstName)+' '+esc(s.lastName)+'</div>'+
+          '<div class="rm">✉️ '+esc(s.email||'N/C')+' · 📞 '+esc(s.phone||'N/C')+' · Spécialité : <b>'+esc(s.specialite||'N/C')+'</b></div>'+
+        '</div>'+
+        statusChip(s.status)+
+        '</div>';
+      }).join('')+'</div>');
+
+    Array.prototype.forEach.call(document.querySelectorAll('[data-openst]'),function(r){
+      r.addEventListener('click',function(){
+        var st=STATE.students.filter(function(x){return x.id===r.getAttribute('data-openst');})[0];
+        if(st) openStudentModal(st);
+      });
+    });
+  }
+
   function openRejectModal(st){
     var html = 
       '<div class="card">'+
         '<h3>1. Remarques administratives particulières</h3>'+
         '<textarea id="rejReasonInput" placeholder="Ajustements spécifiques (ex: corriger le titre, expliciter les missions de stage)..." style="width:100%;height:80px;border:1px solid var(--ln);border-radius:9px;padding:10px;outline:none;"></textarea>'+
-        '<button class="btn prim sm" id="btnGenRejectMsg" style="margin-top:10px;">Lancer l\'Analyse Approfondie & Générer le Mail (Double Puissance IA)</button>'+
+        '<button class="btn prim sm" id="btnGenRejectMsg" style="margin-top:10px;">Générer les conseils experts IA & Mail pour l\'étudiant</button>'+
       '</div>'+
       '<div id="rejectResultArea" style="display:none;">'+
         '<div class="card" style="background:#f8fafc;border:1px solid var(--bl);">'+
-          '<h3 style="color:var(--bl);">📊 Analyse RH Interne de l\'IA (Audit Complet)</h3>'+
-          '<textarea id="rejInternalAnalysis" style="width:100%;height:220px;border:1px solid var(--ln);border-radius:9px;padding:12px;font-size:13px;outline:none;line-height:1.5;background:#ffffff;"></textarea>'+
+          '<h3 style="color:var(--bl);">📊 Audit RH & Conseils Interne</h3>'+
+          '<textarea id="rejInternalAnalysis" style="width:100%;height:180px;border:1px solid var(--ln);border-radius:9px;padding:12px;font-size:13px;outline:none;line-height:1.5;background:#ffffff;"></textarea>'+
         '</div>'+
         '<div class="card">'+
-          '<h3>✉️ Mail Constructif & Ultra-Développé pour l\'Étudiant</h3>'+
+          '<h3>✉️ Mail Pédagogique & Détaillé pour l\'Étudiant (Conseils + Pistes)</h3>'+
           '<textarea id="rejMsgText" style="width:100%;height:320px;border:1px solid var(--ln);border-radius:9px;padding:12px;font-size:13px;outline:none;line-height:1.5;"></textarea>'+
           '<div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">'+
-            '<button class="btn sm prim" id="btnSendRejectEmail">✉️ Envoyer par Mail (Consigne dans l\'Historique)</button>'+
-            '<button class="btn sm" id="btnDlRejectMsg">Exporter le Mail (.txt)</button>'+
+            '<button class="btn sm prim" id="btnSendRejectEmail">✉️ Envoyer par Mail à l\'étudiant</button>'+
+            '<button class="btn sm" id="btnDlRejectMsg">Exporter (.txt)</button>'+
           '</div>'+
         '</div>'+
       '</div>'+
@@ -1085,19 +1037,18 @@ function renderAdmin(){
         '<button class="btn dan sm" id="btnConfirmReject">Confirmer le statut Refusé</button>'+
       '</div>';
 
-    openModal('Analyse & Refus de CV : ' + st.firstName + ' ' + st.lastName, html);
+    openModal('Analyse RH & Conseils : ' + st.firstName + ' ' + st.lastName, html);
 
     document.getElementById('btnGenRejectMsg').addEventListener('click', function(){
       var reason = val('rejReasonInput');
-      
-      this.textContent = 'Génération de l\'analyse RH approfondie...';
+      this.textContent = 'Génération des conseils RH complets...';
       callAIDeepAuditCV(st.rawText || (st.firstName + ' ' + st.lastName + ' ' + st.skills), reason)
         .then(function(resObj){
           document.getElementById('rejectResultArea').style.display = 'block';
           document.getElementById('rejInternalAnalysis').value = resObj.internalAnalysis || '';
           document.getElementById('rejMsgText').value = resObj.studentEmail || '';
         }).finally(function(){
-          document.getElementById('btnGenRejectMsg').textContent = 'Régénérer l\'analyse et le mail';
+          document.getElementById('btnGenRejectMsg').textContent = 'Régénérer les conseils';
         });
     });
 
@@ -1113,14 +1064,14 @@ function renderAdmin(){
       });
       apiPost('saveStudent', st);
 
-      var subject = encodeURIComponent("INSEEC Bachelor — Analyse et corrections requises sur votre CV");
+      var subject = encodeURIComponent("INSEEC Bachelor — Recommandations et conseils pour l'optimisation de votre CV");
       var body = encodeURIComponent(msg);
       window.location.href = "mailto:" + st.email + "?subject=" + subject + "&body=" + body;
     });
 
     document.getElementById('btnDlRejectMsg').addEventListener('click', function(){
       var txt = val('rejMsgText'); if(!txt) return;
-      downloadTxtFile('Corrections_CV_' + st.lastName + '.txt', txt);
+      downloadTxtFile('Conseils_CV_' + st.lastName + '.txt', txt);
     });
 
     document.getElementById('btnConfirmReject').addEventListener('click', function(){
@@ -1135,22 +1086,40 @@ function renderAdmin(){
   function rAllStudents(main){
     var f = STATE.studentFilter;
     var specs = getCustomSpecs();
-    var statuses = getCustomStatuses();
+    var statuses = getCustomStatuses().filter(function(s){ return s !== 'Refusé'; });
 
-    var filtered = STATE.students.filter(function(s){
+    var activeStudentsOnly = STATE.students.filter(function(s){ return s.status !== 'Refusé'; });
+
+    var filtered = activeStudentsOnly.filter(function(s){
       var q = f.search.toLowerCase();
       var matchSearch = !q || (s.firstName + ' ' + s.lastName + ' ' + s.email).toLowerCase().indexOf(q) !== -1;
-      var matchStatus = !f.status || s.status === f.status;
-      var matchSpec = !f.specialite || s.specialite === f.specialite;
+      
+      var matchStatus = f.statuses.length === 0 || f.statuses.indexOf(s.status) !== -1;
+      var matchSpec = f.specs.length === 0 || f.specs.indexOf(s.specialite) !== -1;
+
       return matchSearch && matchStatus && matchSpec;
     });
 
     main.innerHTML = 
-      '<div class="head"><div><h2>Tous les Étudiants</h2><p class="head-sub">'+filtered.length+' étudiant(s) au total</p></div></div>'+
-      '<div class="filters">'+
+      '<div class="head"><div><h2>Tous les Étudiants (Actifs)</h2><p class="head-sub">'+filtered.length+' étudiant(s) affiché(s)</p></div></div>'+
+      '<div class="filters card">'+
         '<input class="fi" id="stSrch" placeholder="Rechercher par nom, prénom, email..." value="'+esc(f.search)+'">'+
-        '<select class="fi-sel" id="stStat"><option value="">Tous les statuts</option>'+statuses.map(function(s){return'<option'+(f.status===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select>'+
-        '<select class="fi-sel" id="stSpec"><option value="">Toutes les spécialités</option>'+specs.map(function(s){return'<option'+(f.specialite===s.name?' selected':'')+'>'+s.name+'</option>';}).join('')+'</select>'+
+        '<div style="margin-top:10px;">'+
+          '<label style="font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;">Filtrer par Statuts (Sélection multiple) :</label>'+
+          '<div class="check-group" id="stStatGroup">'+
+            statuses.map(function(st){
+              return '<label class="check-item"><input type="checkbox" value="'+esc(st)+'" '+(f.statuses.indexOf(st)!==-1?'checked':'')+'> '+esc(st)+'</label>';
+            }).join('')+
+          '</div>'+
+        '</div>'+
+        '<div style="margin-top:10px;">'+
+          '<label style="font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;">Filtrer par Spécialités (Sélection multiple) :</label>'+
+          '<div class="check-group" id="stSpecGroup">'+
+            specs.map(function(sp){
+              return '<label class="check-item"><input type="checkbox" value="'+esc(sp.name)+'" '+(f.specs.indexOf(sp.name)!==-1?'checked':'')+'> '+esc(sp.name)+'</label>';
+            }).join('')+
+          '</div>'+
+        '</div>'+
       '</div>'+
       '<div class="lst">'+filtered.map(function(s){
         return '<div class="row" data-openst="'+esc(s.id)+'"><div class="row-m">'+
@@ -1160,9 +1129,21 @@ function renderAdmin(){
         statusChip(s.status)+'</div>';
       }).join('')+(filtered.length?'':'<p class="rm" style="padding:20px;">Aucun étudiant trouvé.</p>')+'</div>';
 
-    document.getElementById('stSrch').addEventListener('input',function(e){f.search=e.target.value;rAllStudents(main);});
-    document.getElementById('stStat').addEventListener('change',function(e){f.status=e.target.value;rAllStudents(main);});
-    document.getElementById('stSpec').addEventListener('change',function(e){f.specialite=e.target.value;rAllStudents(main);});
+    document.getElementById('stSrch').addEventListener('input',function(e){ f.search=e.target.value; rAllStudents(main); });
+    
+    document.querySelectorAll('#stStatGroup input').forEach(function(cb){
+      cb.addEventListener('change', function(){
+        f.statuses = Array.from(document.querySelectorAll('#stStatGroup input:checked')).map(function(x){ return x.value; });
+        rAllStudents(main);
+      });
+    });
+
+    document.querySelectorAll('#stSpecGroup input').forEach(function(cb){
+      cb.addEventListener('change', function(){
+        f.specs = Array.from(document.querySelectorAll('#stSpecGroup input:checked')).map(function(x){ return x.value; });
+        rAllStudents(main);
+      });
+    });
 
     Array.prototype.forEach.call(document.querySelectorAll('[data-openst]'),function(r){
       r.addEventListener('click',function(){
@@ -1179,7 +1160,7 @@ function renderAdmin(){
     getPdfBlob(activeKey).then(function(pdfData){
       var pdfSection = pdfData ? 
         '<iframe class="pdf-viewer" src="'+pdfData+'"></iframe>'+
-        '<div style="margin-top:10px;display:flex;gap:10px;"><a href="'+pdfData+'" download="Document_'+esc(st.lastName)+'.pdf" class="btn sm prim">Télécharger le document sélectionné</a></div>' : 
+        '<div style="margin-top:10px;display:flex;gap:10px;"><a href="'+pdfData+'" download="CV_'+esc(st.lastName)+'.pdf" class="btn sm prim">Télécharger ce document (PDF)</a></div>' : 
         '<p class="rm">Aucun fichier à afficher pour la sélection actuelle.</p>';
 
       var html=
@@ -1222,7 +1203,7 @@ function renderAdmin(){
           '</div>'+
           '<h3>Historique complet du dossier</h3>'+
           '<div id="m_loglst">'+(st.history||[]).map(function(h){
-            return '<div class="log-item"><div class="log-d">📅 '+esc(h.date)+'</div><div class="log-t">'+esc(h.action)+'</div></div>';
+            return '<div class="log-item"><div class="log-d">📅 '+esc(h.date)+'</div><div class="log-t">'+esc(cleanTextFormatting(h.action))+'</div></div>';
           }).join('')+'</div>'+
         '</div>'+
 
@@ -1243,8 +1224,21 @@ function renderAdmin(){
       });
 
       document.getElementById('m_sav').addEventListener('click', function(){
-        st.firstName=val('m_fn'); st.lastName=val('m_ln'); st.email=val('m_em'); st.phone=val('m_ph');
-        st.specialite=val('m_sp'); st.status=val('m_st'); st.skills=val('m_sk');
+        var fn = val('m_fn');
+        var ln = val('m_ln');
+
+        if(isDuplicateStudent(fn, ln, st.id)) {
+          alert("❌ IMPOSSIBLE D'ENREGISTRER :\nUne fiche active existe déjà au nom de " + fn + " " + ln + ".");
+          return;
+        }
+
+        st.firstName = fn;
+        st.lastName = ln;
+        st.email = val('m_em');
+        st.phone = val('m_ph');
+        st.specialite = val('m_sp');
+        st.status = val('m_st');
+        st.skills = val('m_sk');
 
         var rad = document.querySelector('input[name="active_doc"]:checked');
         if(rad) st.activeCv = rad.value;
@@ -1276,7 +1270,7 @@ function renderAdmin(){
   function rStudentFolders(main){
     var fv=STATE.folderStudents, specs=getCustomSpecs();
     if(fv.mode==='sublist'){
-      var list=STATE.students.filter(function(s){return s.specialite===fv.spec;});
+      var list=STATE.students.filter(function(s){return s.specialite===fv.spec && s.status !== 'Refusé';});
       main.innerHTML=
         '<div class="head"><div><h2>Dossier Spécialité : '+esc(fv.spec)+'</h2></div>'+
         '<button class="btn sm" id="bkSpec">← Retour aux dossiers</button></div>'+
@@ -1297,7 +1291,7 @@ function renderAdmin(){
     main.innerHTML=
       '<div class="head"><h2>Dossiers par Spécialisation ('+specs.length+')</h2></div>'+
       '<div class="folder-grid">'+specs.map(function(sp){
-        var count=STATE.students.filter(function(s){return s.specialite===sp.name;}).length;
+        var count=STATE.students.filter(function(s){return s.specialite===sp.name && s.status !== 'Refusé';}).length;
         return '<div class="fc" data-openspec="'+esc(sp.name)+'">'+
           '<div class="fc-head"><div class="fc-ico">📁</div><span class="fc-rncp">'+esc(sp.rncp)+'</span></div>'+
           '<div class="fc-name">'+esc(sp.name)+'</div>'+
@@ -1377,7 +1371,7 @@ function renderAdmin(){
 
   function rMatching(main){
     var specs = getCustomSpecs();
-    var statuses = getCustomStatuses();
+    var statuses = getCustomStatuses().filter(function(s){ return s !== 'Refusé'; });
     var pendingOffers = STATE.offers.filter(function(o){ return o.status === 'À traiter'; });
 
     main.innerHTML=
@@ -1393,7 +1387,7 @@ function renderAdmin(){
           '<div class="fgroup"><label>Ou importer la fiche en PDF</label><input type="file" id="mOfferPdfFile" accept="application/pdf"></div>'+
           '<div class="fgroup full" style="grid-column: span 2;"><label>Contenu de l\'offre</label><textarea id="mOfferText" placeholder="Texte de l\'offre..." style="height:70px;"></textarea></div>'+
         '</div>'+
-        '<h3 style="margin-top:14px;">2. Filtres candidats</h3>'+
+        '<h3 style="margin-top:14px;">2. Filtres candidats (Sélection multiple)</h3>'+
         '<div style="margin-bottom:12px;">'+
           '<label style="font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;">Spécialités :</label>'+
           '<div class="check-group" id="mSpecChecks">'+
@@ -1439,6 +1433,7 @@ function renderAdmin(){
       var selectedStatuses = Array.from(document.querySelectorAll('#mStatusChecks input:checked')).map(function(cb){ return cb.value; });
 
       var eligible = STATE.students.filter(function(s){
+        if(s.status === 'Refusé') return false; 
         var matchSpec = selectedSpecs.length === 0 || selectedSpecs.indexOf(s.specialite) !== -1;
         var matchStatus = selectedStatuses.length === 0 || selectedStatuses.indexOf(s.status) !== -1;
         return matchSpec && matchStatus;
@@ -1458,7 +1453,6 @@ function renderAdmin(){
 
       Promise.all(promises).then(function(results){
         results.sort(function(a,b){ return b.score - a.score; });
-
         statusEl.textContent = 'Évaluation terminée pour ' + results.length + ' candidat(s).';
 
         var html = 
@@ -1524,7 +1518,7 @@ function renderAdmin(){
           });
         });
 
-        document.getElementById('btnTransmitSelected').addEventListener('click', function(){
+        document.getElementById('btnTransmitSelected').addEventListener('click', async function(){
           var cbs = document.querySelectorAll('.match-select-cb:checked');
           if(cbs.length === 0){ alert("Veuillez cocher au moins un candidat à transmettre."); return; }
 
@@ -1538,20 +1532,36 @@ function renderAdmin(){
           var emailLines = "Bonjour " + recName + ",\n\n" +
             "Suite à notre échange concernant le poste de " + offTitle + ", le Bureau des Carrières INSEEC Bachelor a le plaisir de vous transmettre une sélection de profils qualifiés correspondant à vos exigences :\n\n";
 
-          selectedSts.forEach(function(st){
-            emailLines += "• " + st.firstName + " " + st.lastName + " — Spécialité : " + st.specialite + "\n";
-            emailLines += "  Compétences clés : " + (st.skills||'Étudiant INSEEC Bachelor') + "\n\n";
-          });
+          var pdfDownloadLinks = [];
 
-          emailLines += "Vous trouverez leurs CVs joints à cet envoi. Nous restons à votre entière disposition pour planifier un premier échange.\n\nBien cordialement,\nBureau des Carrières INSEEC Bachelor";
+          for(var i = 0; i < selectedSts.length; i++){
+            var st = selectedSts[i];
+            emailLines += "• " + st.firstName + " " + st.lastName + " — Spécialité : " + st.specialite + "\n";
+            emailLines += "  Compétences clés : " + cleanTextFormatting(st.skills||'Étudiant INSEEC Bachelor') + "\n\n";
+
+            var activeKey = st.activeCv === 'cv2' ? st.id + '_cv2' : (st.activeCv === 'portfolio' ? st.id + '_port' : st.id + '_cv1');
+            var pdfData = await getPdfBlob(activeKey);
+            if(pdfData){
+              pdfDownloadLinks.push({ name: st.firstName + '_' + st.lastName + '_CV.pdf', data: pdfData });
+            }
+          }
+
+          emailLines += "Vous trouverez leurs CVs ci-joints. Nous restons à votre entière disposition pour planifier un premier échange.\n\nBien cordialement,\nBureau des Carrières INSEEC Bachelor";
+
+          var linksHtml = pdfDownloadLinks.map(function(link){
+            return '<a href="'+link.data+'" download="'+link.name+'" class="btn sm prim" style="margin-right:8px;margin-bottom:8px;">📥 Télécharger '+link.name+' (à glisser dans Outlook)</a>';
+          }).join('');
 
           var mHtml = 
             '<div class="card">'+
-              '<h3>✉️ Mail de Présentation au Recruteur (Prêt à l\'envoi)</h3>'+
+              '<h3>1. Télécharger les pièces jointes (CVs en PDF)</h3>'+
+              '<p style="font-size:12px;color:var(--mu);margin-bottom:8px;">Cliquez pour télécharger le(s) CV(s) puis glissez-le(s) dans votre mail Outlook :</p>'+
+              '<div style="margin-bottom:14px;">'+(linksHtml || '<p class="rm">Aucun PDF trouvé.</p>')+'</div>'+
+              '<h3>2. Contenu du mail pré-rédigé</h3>'+
               '<div style="margin-bottom:10px;"><label style="font-weight:700;">Destinataire :</label> <input id="recEmailInput" value="'+esc(recEmail)+'" style="width:100%;padding:8px;border:1px solid var(--ln);border-radius:6px;"></div>'+
-              '<textarea id="recMailText" style="width:100%;height:240px;border:1px solid var(--ln);border-radius:9px;padding:12px;font-size:13px;line-height:1.5;">'+esc(emailLines)+'</textarea>'+
+              '<textarea id="recMailText" style="width:100%;height:200px;border:1px solid var(--ln);border-radius:9px;padding:12px;font-size:13px;line-height:1.5;">'+esc(emailLines)+'</textarea>'+
               '<div style="margin-top:14px;display:flex;justify-content:flex-end;">'+
-                '<button class="btn suc sm" id="btnConfirmSendRec">Envoyer le Mail & Marquer l\'offre "Traitée"</button>'+
+                '<button class="btn suc sm" id="btnConfirmSendRec">Ouvrir Outlook & Consigner dans l\'Historique</button>'+
               '</div>'+
             '</div>';
 
@@ -1568,7 +1578,6 @@ function renderAdmin(){
               }
               st.history = st.history || [];
               st.history.unshift({ date: nowExactStr(), action: 'CV transmis à l\'entreprise pour l\'offre : ' + offTitle });
-              st.status = 'Candidature envoyée';
               apiPost('saveStudent', st);
             });
 
@@ -1603,7 +1612,7 @@ function renderAdmin(){
       '<button class="btn prim sm" id="addOffBtn">+ Ajouter une offre</button></div>'+
       '<div class="filters">'+
         '<input class="fi" id="ofSearch" placeholder="Rechercher poste, entreprise, contact..." value="'+esc(filter.search)+'">'+
-        '<select class="fi-sel" id="ofStatus"><option value="">Tous les statuts</option>'+OFFER_STATUSES.map(function(s){return'<option'+(filter.status===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select>'+
+        '<select class="fi-sel" id="ofStatus" style="width:200px;"><option value="">Tous les statuts</option>'+OFFER_STATUSES.map(function(s){return'<option'+(filter.status===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select>'+
       '</div>'+
       '<div class="lst">'+filtered.map(function(o){
         return '<div class="row" data-openoff="'+esc(o.id)+'"><div class="row-m">'+
@@ -1903,7 +1912,7 @@ function renderAdmin(){
       var detailsArr = Array.isArray(exp.details) ? exp.details : [exp.details];
       detailsArr.forEach(function(det){
         if(!det) return;
-        var splitDet = doc.splitTextToSize("• " + det, contentWidth - 4);
+        var splitDet = doc.splitTextToSize("• " + cleanTextFormatting(det), contentWidth - 4);
         doc.text(splitDet, margin + 4, y);
         y += (splitDet.length * lineGap);
       });
@@ -1934,20 +1943,20 @@ function renderAdmin(){
 
     doc.setFont("Helvetica", "normal");
     doc.setFontSize(baseFontSize);
-    var hSkills = "• Savoir-faire : " + (data.hardSkills || []).join("  •  ");
+    var hSkills = "• Savoir-faire : " + (data.hardSkills || []).map(cleanTextFormatting).join("  •  ");
     var splitHard = doc.splitTextToSize(hSkills, contentWidth);
     doc.text(splitHard, margin, y);
     y += (splitHard.length * lineGap) + 1.5;
 
     if(data.softSkills && data.softSkills.length){
-      var sSkills = "• Savoir-être : " + (data.softSkills || []).join("  •  ");
+      var sSkills = "• Savoir-être : " + (data.softSkills || []).map(cleanTextFormatting).join("  •  ");
       var splitSoft = doc.splitTextToSize(sSkills, contentWidth);
       doc.text(splitSoft, margin, y);
       y += (splitSoft.length * lineGap) + 1.5;
     }
 
     if(data.languages){
-      doc.text("• Langues : " + data.languages, margin, y);
+      doc.text("• Langues : " + cleanTextFormatting(data.languages), margin, y);
     }
 
     doc.save("CV_" + (data.fullName||"Candidat").replace(/\s+/g,'_') + ".pdf");
@@ -2084,8 +2093,8 @@ function renderAdmin(){
     function refreshModalBody(){
       var html = 
         '<div class="fgrid">'+
-          '<div class="fgroup"><label>Identifiant Technique (ex: luxe, rh, ia_data)</label><input id="sp_key" value="'+esc(specKey||'')+ '" '+(isEdit?'readonly style="background:#f1f5f9;"':'')+'></div>'+
-          '<div class="fgroup"><label>Code RNCP (ex: RNCP38605)</label><input id="sp_rncp" value="'+esc(specObj.rncp)+'"></div>'+
+          '<div class="fgroup"><label>Identifiant Technique</label><input id="sp_key" value="'+esc(specKey||'')+ '" '+(isEdit?'readonly style="background:#f1f5f9;"':'')+'></div>'+
+          '<div class="fgroup"><label>Code RNCP</label><input id="sp_rncp" value="'+esc(specObj.rncp)+'"></div>'+
           '<div class="fgroup full" style="grid-column: span 2;"><label>Nom de la Spécialisation</label><input id="sp_name" value="'+esc(specObj.name)+'"></div>'+
           '<div class="fgroup full" style="grid-column: span 2;"><label>Titre Officiel certifié</label><input id="sp_title" value="'+esc(specObj.title)+'"></div>'+
         '</div>'+
@@ -2144,11 +2153,11 @@ function renderAdmin(){
 
   function rRGPD(main){ 
     main.innerHTML=
-      '<div class="head"><h2>RGPD & Protection des Données</h2></div>'+
+      '<div class="head"><h2>RGPD & Conformité des données</h2></div>'+
       '<div class="card">'+
         '<h3>Conformité et gestion des données</h3>'+
         '<p style="font-size:13px;color:var(--mu);margin-bottom:12px;">Le système enregistre le consentement lors de la collecte initiale.</p>'+
-        '<button class="btn dan sm" id="btnPurgeAll">Purger l\'intégralité des étudiants ('+STATE.students.length+')</button>'+
+        '<button class="btn dan sm" id="btnPurgeAll">Supprimer l\'ensemble des fiches étudiants ('+STATE.students.length+')</button>'+
       '</div>';
     document.getElementById('btnPurgeAll').addEventListener('click', function(){
       if(confirm("Confirmer la suppression irréversible de l'ensemble des dossiers ?")){ apiPost('purgeStudents', {}).then(function(){ refreshAll().then(shell); }); }
