@@ -196,6 +196,14 @@ function cleanTextFormatting(text) {
     .trim();
 }
 
+function formatRecruiterSalutation(name) {
+  if(!name || !name.trim()) return "Bonjour,";
+  var clean = name.trim();
+  if(/^mme|madame/i.test(clean)) return "Bonjour " + clean + ",";
+  if(/^mr|monsieur/i.test(clean)) return "Bonjour " + clean + ",";
+  return "Bonjour M./Mme " + clean + ",";
+}
+
 function isDuplicateStudent(firstName, lastName, excludeId) {
   var fn = (firstName || '').trim().toLowerCase();
   var ln = (lastName || '').trim().toLowerCase();
@@ -364,24 +372,24 @@ function parseCVWithAI(pdfText, fileName){
     });
   }
 
-  var prompt = "Tu es un assistant RH d'élite pour INSEEC Bachelor. Extrais avec une précision absolue les données de ce CV :\n\n" +
+  var prompt = "Tu es un assistant RH d'élite. Extrais avec une précision absolue les données de ce CV :\n\n" +
                 "TEXTE DU CV :\n" + pdfText + "\n\n" +
                 "Liste des Spécialités valides : " + specsList + ".\n\n" +
-                "Format JSON strictly obligatoire :\n" +
+                "Format JSON strictement obligatoire :\n" +
                 "{\n" +
                 "  \"firstName\": \"Prénom de l'étudiant\",\n" +
                 "  \"lastName\": \"Nom de famille\",\n" +
                 "  \"email\": \"adresse email si trouvée\",\n" +
                 "  \"phone\": \"numéro de téléphone si trouvé\",\n" +
                 "  \"specialite\": \"Choisis la spécialité la plus pertinente parmi la liste ci-dessus\",\n" +
-                "  \"skills\": \"Synthèse des 5 à 8 compétences clés, outils maîtrisés et logiciels\"\n" +
+                "  \"skills\": \"Synthèse fluide des compétences clés, outils maîtrisés et points forts du candidat\"\n" +
                 "}";
 
   return fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
     body: JSON.stringify({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       max_tokens: 2000,
       messages: [{ role: "user", content: prompt }],
       response_format: { type: "json_object" }
@@ -391,35 +399,33 @@ function parseCVWithAI(pdfText, fileName){
   });
 }
 
-function callAIDeepAuditCV(studentText, reasonText){
+function callAIDeepAuditCV(studentText, studentFirstName, reasonText){
   var apiKey = getApiKey();
-  if(!apiKey) return Promise.resolve({ internalAnalysis: "Diagnostic IA indisponible (Absence de clé API)", studentEmail: "Bonjour,\n\nMerci de revoir votre CV et de le mettre à jour." });
+  var firstNameStr = studentFirstName || "étudiant";
+  if(!apiKey) return Promise.resolve({ internalAnalysis: "Diagnostic IA indisponible (Absence de clé API)", studentEmail: "Bonjour " + firstNameStr + ",\n\nMerci de revoir votre CV et de le mettre à jour." });
 
-  var prompt = "Tu es le Directeur du Bureau des Carrières INSEEC Bachelor, Expert en recrutement d'alternants.\n" +
-                 "Effectue une analyse RH ultra-pédagogique, complète et bienveillante sur le CV d'un étudiant dont la candidature a été mise de côté pour révision.\n\n" +
-                 "RÈGLES STRICTES DE FORMATAGE :\n" +
-                 "1. Ne mets AUCUN marqueur Markdown (Pas de **, pas de ***, pas de dièses #, pas de guillemets bizarres).\n" +
-                 "2. Le mail destiné à l'étudiant doit être EXPERT, TRÈS DÉTAILLÉ, CONSTRUCTIF et orienté SOLUTIONS.\n" +
-                 "3. Tu dois guider l'étudiant pas à pas en lui donnant TOUS les conseils et pistes possibles sans rien inventer sur son parcours, mais en l'aidant à mieux valoriser ce qu'il a déjà fait.\n" +
-                 "4. Structure le mail ainsi :\n" +
-                 "   - Introduction encourageante du Bureau des Carrières INSEEC.\n" +
-                 "   - Section 1 : Structure & Lisibilité globale (Format ATS, hiérarchie visuelle, clarté des rubriques).\n" +
-                 "   - Section 2 : Analyse du Titre & Compétences (Comment rendre son titre percutant et valoriser ses savoir-faire / outils).\n" +
-                 "   - Section 3 : Optimisation des Expériences (Expliciter la tournure des phrases, ajouter des résultats/chiffres, utiliser des verbes d'action).\n" +
-                 "   - Section 4 : Recommandations spécifiques de l'administration (" + (reasonText || "Optimisation globale pour séduire les recruteurs") + ").\n" +
-                 "   - Conclusion motiver pour qu'il re-dépose sa nouvelle version au plus vite.\n\n" +
+  var prompt = "Tu es expert senior en recrutement d'alternants et ingénierie de CV ATS.\n" +
+                 "Rédige une analyse RH approfondie et un courriel de recommandations très complet, percutant et aéré pour l'étudiant nommé " + firstNameStr + ".\n\n" +
+                 "EXIGENCES STRICTES DE STYLE ET DE STRUCTURE :\n" +
+                 "1. Aucun symbole Markdown (aucun **, pas de ***, pas de #).\n" +
+                 "2. Interdiction formelle d'utiliser des titres rigides ou artificiels ('Section 1', 'Section 2', 'Titre du poste').\n" +
+                 "3. Adresse-toi à l'étudiant par son prénom : 'Bonjour " + firstNameStr + ",\n\n'.\n" +
+                 "4. AÈRE AU MAXIMUM LE TEXTE : Insère des sauts de ligne clairs entre chaque paragraphe.\n" +
+                 "5. Analyse exhaustive : Cite des éléments exacts du CV (ex: 'Votre expérience chez Canada Goose', 'Votre cursus à l'American Business School', 'Votre pratique du basket-ball au Club Marne La Vallée').\n" +
+                 "6. Développe des conseils d'optimisation ATS ultra-pertinents et motivants.\n" +
+                 "7. Termine par un simple 'Cordialement,' sans rajouter de nom d'école ou d'institution à la fin.\n\n" +
                  "CV DE L'ÉTUDIANT :\n" + studentText + "\n\n" +
                  "Format JSON obligatoire :\n" +
                  "{\n" +
-                 "  \"internalAnalysis\": \"ANALYSE RH INTERNE DÉTAILLÉE EN TEXTE BRUT SANS MARKDOWN\",\n" +
-                 "  \"studentEmail\": \"MAIL STRUCTURÉ, DÉTAILLÉ ET PEDAGOGIQUE POUR L'ÉTUDIANT SANS MARKDOWN\"\n" +
+                 "  \"internalAnalysis\": \"ANALYSE RH INTERNE DÉTAILLÉE EN TEXTE BRUT SANS MARKDOWN NI TITRES RIGIDES, BIEN AÉRÉE AVEC DES SAUTS DE LIGNE\",\n" +
+                 "  \"studentEmail\": \"COURRIEL PÉDAGOGIQUE ET APPROFONDI POUR L'ÉTUDIANT SANS MARKDOWN, BIEN AÉRÉ PAR DES SAUTS DE LIGNE ET FINISSANT SEULEMENT PAR CORDIALEMENT,\"\n" +
                  "}";
 
   return fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
     body: JSON.stringify({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       max_tokens: 4000,
       messages: [{ role: "user", content: prompt }],
       response_format: { type: "json_object" }
@@ -431,7 +437,7 @@ function callAIDeepAuditCV(studentText, reasonText){
       studentEmail: cleanTextFormatting(res.studentEmail)
     };
   }).catch(function(){
-    return { internalAnalysis: "Erreur d'analyse OpenAI", studentEmail: "Veuillez mettre votre CV à jour." };
+    return { internalAnalysis: "Erreur d'analyse OpenAI", studentEmail: "Bonjour " + firstNameStr + ",\n\nVeuillez mettre votre CV à jour.\n\nCordialement," };
   });
 }
 
@@ -439,27 +445,31 @@ function callAIOptimizeCVFull(studentText, offerText){
   var apiKey = getApiKey();
   if(!apiKey) return Promise.reject("Clé API absente.");
 
-  var prompt = "Tu es un expert en ingénierie de CV ATS. Classe impérativement toutes les expériences et formations en CHRONOLOGIE INVERSE STRICTE. Rédige tout en texte brut parfait sans aucun symbole markdown.\n\n" +
-                 "CV TEXTE :\n" + studentText + "\n\n" +
-                 "OFFRE CIBLÉE :\n" + (offerText || "Business Development / Management") + "\n\n" +
-                 "JSON Format :\n" +
+  var prompt = "Tu es un expert senior en optimisation de CV pour les filtres ATS et recruteurs.\n" +
+                 "Ta mission : Réécrire et optimiser l'ensemble du CV sans AUCUN oubli (garde TOUS les diplômes, cours pertinents, expériences, langues, LinkedIn, outils et centres d'intérêt comme les clubs de sport).\n" +
+                 "Reformule chaque mission avec des verbes d'action puissants et intègre les mots-clés sectoriels ATS de la spécialisation ou de la fiche de poste.\n" +
+                 "Règle absolue : TOUTES les expériences et formations doivent être classées en CHRONOLOGIE INVERSE STRICTE.\n\n" +
+                 "TEXTE ORIGINAL DU CV :\n" + studentText + "\n\n" +
+                 "OFFRE CIBLÉE OU SPÉCIALITÉ :\n" + (offerText || "Développement Commercial / Management") + "\n\n" +
+                 "JSON Format (Textes bruts sans markdown) :\n" +
                  "{\n" +
                  "  \"fullName\": \"Prénom NOM\",\n" +
-                 "  \"contact\": \"Téléphone | Email | Ville\",\n" +
-                 "  \"title\": \"TITRE DU POSTE\",\n" +
-                 "  \"summary\": \"Accroche synthétique de 3 lignes\",\n" +
-                 "  \"hardSkills\": [\"Savoir-faire 1\", \"Savoir-faire 2\"],\n" +
+                 "  \"contact\": \"Téléphone | Email | Ville | LinkedIn\",\n" +
+                 "  \"title\": \"TITRE DE POSTE DYNAMIQUE ET OPTIMISÉ POUR L'ATS\",\n" +
+                 "  \"summary\": \"Accroche percutante de 3 à 4 lignes valorisant le profil, la trilinguistique/quadrilinguistique et la recherche d'alternance\",\n" +
+                 "  \"hardSkills\": [\"Domaine d'expertise / Outil ATS 1\", \"Logiciel / Méthodologie 2\"],\n" +
                  "  \"softSkills\": [\"Qualité 1\", \"Qualité 2\"],\n" +
-                 "  \"languages\": \"Français (maternelle), Anglais (B2)...\",\n" +
-                 "  \"experiences\": [{\"role\": \"Intitulé\", \"company\": \"Entreprise\", \"period\": \"Dates\", \"details\": [\"Mission 1\", \"Mission 2\"]}]\n," +
-                 "  \"education\": [{\"degree\": \"Diplôme\", \"school\": \"École\", \"period\": \"Dates\"}]\n" +
+                 "  \"languages\": \"Langues avec niveaux précis...\",\n" +
+                 "  \"interests\": \"Centres d'intérêt détaillés (ex: Sport en club, engagement...)\",\n" +
+                 "  \"experiences\": [{\"role\": \"Intitulé valorisé\", \"company\": \"Entreprise\", \"period\": \"Dates\", \"details\": [\"Mission 1 réécrite avec mots-clés ATS\", \"Mission 2\"]}]\n," +
+                 "  \"education\": [{\"degree\": \"Diplôme / Formation\", \"school\": \"Établissement & Cours pertinents\", \"period\": \"Dates\"}]\n" +
                  "}";
 
   return fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
     body: JSON.stringify({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       max_tokens: 4000,
       messages: [{ role: "user", content: prompt }],
       response_format: { type: "json_object" }
@@ -469,24 +479,30 @@ function callAIOptimizeCVFull(studentText, offerText){
 
 function callAIMatchingDetailed(studentText, offerText){
   var apiKey = getApiKey();
-  if(!apiKey) return Promise.resolve({ score: 65, positives: ["Spécialité conforme"], negatives: ["Clé API absente pour audit fin"], verdict: "Analyse automatique de correspondance standard." });
+  if(!apiKey) return Promise.resolve({ score: 65, positives: ["Spécialité conforme"], negatives: ["Clé API absente"], verdict: "Analyse automatique standard." });
 
-  var prompt = "Tu es un DRH d'entreprise et un Expert Recrutement pour l'INSEEC. Évalue avec une rigueur absolue et un très haut niveau de détail l'adéquation entre ce candidat et l'offre d'emploi.\n Ne mets aucun symbole Markdown (** ou ***) dans tes réponses.\n\n" +
+  var prompt = "Tu es le Directeur du Recrutement.\n" +
+                 "Évalue en détail la correspondance exacte entre ce CV et l'offre d'emploi.\n\n" +
+                 "EXIGENCES STRICTES :\n" +
+                 "1. Aucun symbole Markdown (pas de **, pas de #).\n" +
+                 "2. TU DOIS FOURNIR AU MOINS 4 À 6 POINTS FORTS DÉTAILLÉS ET FACTUELS (ex: pertinence de l'expérience en relation client, maîtrise des langues, adéquation de la formation, qualités démontrées).\n" +
+                 "3. TU DOIS FOURNIR AU MOINS 3 À 5 POINTS D'ATTENTION CONCRETS (ex: durée des stages, compétences techniques à renforcer, distance géographique, exigences spécifiques de la fiche de poste).\n" +
+                 "4. Rédige un verdict clair de 3 à 4 lignes aéré avec des phrases structurées.\n\n" +
                  "CV CANDIDAT :\n" + studentText + "\n\n" +
                  "OFFRE D'EMPLOI :\n" + offerText + "\n\n" +
                  "Format JSON obligatoire :\n" +
                  "{\n" +
                  "  \"score\": 85,\n" +
-                 "  \"positives\": [\"Point fort détaillé 1\", \"Point fort détaillé 2\"],\n" +
-                 "  \"negatives\": [\"Point de vigilance détaillé 1\"],\n" +
-                 "  \"verdict\": \"Synthèse RH très complète, argumentée et détaillée sur le potentiel du candidat pour ce poste spécifique en texte brut.\"\n" +
+                 "  \"positives\": [\"Point fort factuel 1\", \"Point fort factuel 2\", \"Point fort factuel 3\", \"Point fort factuel 4\"],\n" +
+                 "  \"negatives\": [\"Point de vigilance 1\", \"Point de vigilance 2\", \"Point de vigilance 3\"],\n" +
+                 "  \"verdict\": \"Synthèse RH argumentée et aérée sur la candidature.\"\n" +
                  "}";
 
   return fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
     body: JSON.stringify({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       max_tokens: 3000,
       messages: [{ role: "user", content: prompt }],
       response_format: { type: "json_object" }
@@ -899,7 +915,7 @@ function renderAdmin(){
 
       for(var i=0; i<total; i++){
         var file = files[i];
-        statusEl.textContent = 'Extraction IA & Remplissage (' + (i + 1) + '/' + total + ') : ' + file.name + '...';
+        statusEl.textContent = 'Extraction GPT-4o & Remplissage (' + (i + 1) + '/' + total + ') : ' + file.name + '...';
 
         var txt = await extractPdfText(file);
         var parsed = await parseCVWithAI(txt, file.name);
@@ -957,7 +973,7 @@ function renderAdmin(){
           '<div class="rm">✉️ '+(esc(s.email)||'Email N/C')+' · 📞 '+(esc(s.phone)||'Tél N/C')+' · Spécialité : <b>'+esc(s.specialite||'N/C')+'</b></div>'+
         '</div>'+
         '<div class="ha">'+
-          '<button class="btn dan sm" data-rej="'+esc(s.id)+'">Refuser & Conseils IA</button>'+
+          '<button class="btn dan sm" data-rej="'+esc(s.id)+'">Refuser & Recommandations</button>'+
           '<button class="btn suc sm" data-vld="'+esc(s.id)+'">Valider</button>'+
         '</div>'+
         '</div>';
@@ -1015,20 +1031,20 @@ function renderAdmin(){
   function openRejectModal(st){
     var html = 
       '<div class="card">'+
-        '<h3>1. Remarques administratives particulières</h3>'+
-        '<textarea id="rejReasonInput" placeholder="Ajustements spécifiques (ex: corriger le titre, expliciter les missions de stage)..." style="width:100%;height:80px;border:1px solid var(--ln);border-radius:9px;padding:10px;outline:none;"></textarea>'+
-        '<button class="btn prim sm" id="btnGenRejectMsg" style="margin-top:10px;">Générer les conseils experts IA & Mail pour l\'étudiant</button>'+
+        '<h3>1. Instructions pour la révision</h3>'+
+        '<textarea id="rejReasonInput" placeholder="Précisez les modifications souhaitées..." style="width:100%;height:80px;border:1px solid var(--ln);border-radius:9px;padding:10px;outline:none;"></textarea>'+
+        '<button class="btn prim sm" id="btnGenRejectMsg" style="margin-top:10px;">Générer l\'analyse RH & le message candidat</button>'+
       '</div>'+
       '<div id="rejectResultArea" style="display:none;">'+
         '<div class="card" style="background:#f8fafc;border:1px solid var(--bl);">'+
-          '<h3 style="color:var(--bl);">📊 Audit RH & Conseils Interne</h3>'+
-          '<textarea id="rejInternalAnalysis" style="width:100%;height:180px;border:1px solid var(--ln);border-radius:9px;padding:12px;font-size:13px;outline:none;line-height:1.5;background:#ffffff;"></textarea>'+
+          '<h3 style="color:var(--bl);">Synthèse d\'évaluation interne</h3>'+
+          '<textarea id="rejInternalAnalysis" style="width:100%;height:180px;border:1px solid var(--ln);border-radius:9px;padding:12px;font-size:13px;outline:none;line-height:1.6;background:#ffffff;"></textarea>'+
         '</div>'+
         '<div class="card">'+
-          '<h3>✉️ Mail Pédagogique & Détaillé pour l\'Étudiant (Conseils + Pistes)</h3>'+
-          '<textarea id="rejMsgText" style="width:100%;height:320px;border:1px solid var(--ln);border-radius:9px;padding:12px;font-size:13px;outline:none;line-height:1.5;"></textarea>'+
+          '<h3>Message pour l\'étudiant</h3>'+
+          '<textarea id="rejMsgText" style="width:100%;height:320px;border:1px solid var(--ln);border-radius:9px;padding:12px;font-size:13px;outline:none;line-height:1.6;"></textarea>'+
           '<div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">'+
-            '<button class="btn sm prim" id="btnSendRejectEmail">✉️ Envoyer par Mail à l\'étudiant</button>'+
+            '<button class="btn sm prim" id="btnSendRejectEmail">✉️ Transmettre par e-mail</button>'+
             '<button class="btn sm" id="btnDlRejectMsg">Exporter (.txt)</button>'+
           '</div>'+
         '</div>'+
@@ -1037,18 +1053,18 @@ function renderAdmin(){
         '<button class="btn dan sm" id="btnConfirmReject">Confirmer le statut Refusé</button>'+
       '</div>';
 
-    openModal('Analyse RH & Conseils : ' + st.firstName + ' ' + st.lastName, html);
+    openModal('Analyse du dossier : ' + st.firstName + ' ' + st.lastName, html);
 
     document.getElementById('btnGenRejectMsg').addEventListener('click', function(){
       var reason = val('rejReasonInput');
-      this.textContent = 'Génération des conseils RH complets...';
-      callAIDeepAuditCV(st.rawText || (st.firstName + ' ' + st.lastName + ' ' + st.skills), reason)
+      this.textContent = 'Analyse par GPT-4o en cours...';
+      callAIDeepAuditCV(st.rawText || (st.firstName + ' ' + st.lastName + ' ' + st.skills), st.firstName, reason)
         .then(function(resObj){
           document.getElementById('rejectResultArea').style.display = 'block';
           document.getElementById('rejInternalAnalysis').value = resObj.internalAnalysis || '';
           document.getElementById('rejMsgText').value = resObj.studentEmail || '';
         }).finally(function(){
-          document.getElementById('btnGenRejectMsg').textContent = 'Régénérer les conseils';
+          document.getElementById('btnGenRejectMsg').textContent = 'Régénérer l\'analyse';
         });
     });
 
@@ -1060,18 +1076,18 @@ function renderAdmin(){
       st.history = st.history || [];
       st.history.unshift({ 
         date: nowExactStr(), 
-        action: 'Mail de recommandations envoyé à l\'étudiant pour révision du CV (Motif : ' + reasonText + ')' 
+        action: 'Recommandations transmises à l\'étudiant (Motif : ' + reasonText + ')' 
       });
       apiPost('saveStudent', st);
 
-      var subject = encodeURIComponent("INSEEC Bachelor — Recommandations et conseils pour l'optimisation de votre CV");
+      var subject = encodeURIComponent("INSEEC Bachelor — Recommandations relatives à votre CV");
       var body = encodeURIComponent(msg);
       window.location.href = "mailto:" + st.email + "?subject=" + subject + "&body=" + body;
     });
 
     document.getElementById('btnDlRejectMsg').addEventListener('click', function(){
       var txt = val('rejMsgText'); if(!txt) return;
-      downloadTxtFile('Conseils_CV_' + st.lastName + '.txt', txt);
+      downloadTxtFile('Recommandations_CV_' + st.lastName + '.txt', txt);
     });
 
     document.getElementById('btnConfirmReject').addEventListener('click', function(){
@@ -1105,7 +1121,7 @@ function renderAdmin(){
       '<div class="filters card">'+
         '<input class="fi" id="stSrch" placeholder="Rechercher par nom, prénom, email..." value="'+esc(f.search)+'">'+
         '<div style="margin-top:10px;">'+
-          '<label style="font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;">Filtrer par Statuts (Sélection multiple) :</label>'+
+          '<label style="font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;">Filtrer par Statuts :</label>'+
           '<div class="check-group" id="stStatGroup">'+
             statuses.map(function(st){
               return '<label class="check-item"><input type="checkbox" value="'+esc(st)+'" '+(f.statuses.indexOf(st)!==-1?'checked':'')+'> '+esc(st)+'</label>';
@@ -1113,7 +1129,7 @@ function renderAdmin(){
           '</div>'+
         '</div>'+
         '<div style="margin-top:10px;">'+
-          '<label style="font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;">Filtrer par Spécialités (Sélection multiple) :</label>'+
+          '<label style="font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;">Filtrer par Spécialités :</label>'+
           '<div class="check-group" id="stSpecGroup">'+
             specs.map(function(sp){
               return '<label class="check-item"><input type="checkbox" value="'+esc(sp.name)+'" '+(f.specs.indexOf(sp.name)!==-1?'checked':'')+'> '+esc(sp.name)+'</label>';
@@ -1175,7 +1191,7 @@ function renderAdmin(){
         '</div>'+
 
         '<div class="card" style="margin-top:10px;">'+
-          '<h3>📄 Documents Candidat (Multi-fichiers)</h3>'+
+          '<h3>📄 Documents Candidat</h3>'+
           '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">'+
             '<div style="border:1px solid var(--ln);padding:10px;border-radius:8px;">'+
               '<label style="font-size:11px;font-weight:800;display:block;margin-bottom:4px;">CV PRINCIPAL</label>'+
@@ -1196,25 +1212,25 @@ function renderAdmin(){
         '</div>'+
 
         '<div class="card" style="margin-top:10px;">'+
-          '<h3>Ajouter un commentaire administratif</h3>'+
+          '<h3>Ajouter une note de suivi</h3>'+
           '<div style="display:flex;gap:10px;margin-bottom:12px;">'+
-            '<input id="m_addlog" placeholder="Note interne..." style="flex:1;border:1px solid var(--ln);border-radius:8px;padding:8px 12px;outline:none;">'+
-            '<button class="btn sm prim" id="m_btnlog">+ Ajouter Note</button>'+
+            '<input id="m_addlog" placeholder="Saisir une note..." style="flex:1;border:1px solid var(--ln);border-radius:8px;padding:8px 12px;outline:none;">'+
+            '<button class="btn sm prim" id="m_btnlog">+ Ajouter</button>'+
           '</div>'+
-          '<h3>Historique complet du dossier</h3>'+
+          '<h3>Historique du dossier</h3>'+
           '<div id="m_loglst">'+(st.history||[]).map(function(h){
             return '<div class="log-item"><div class="log-d">📅 '+esc(h.date)+'</div><div class="log-t">'+esc(cleanTextFormatting(h.action))+'</div></div>';
           }).join('')+'</div>'+
         '</div>'+
 
-        '<div class="card" style="margin-top:10px;"><h3>Aperçu du document sélectionné</h3>'+pdfSection+'</div>'+
+        '<div class="card" style="margin-top:10px;"><h3>Aperçu du document</h3>'+pdfSection+'</div>'+
 
         '<div style="display:flex;justify-content:space-between;margin-top:16px;gap:10px;flex-wrap:wrap;">'+
           '<button class="btn dan sm" id="m_del">Supprimer la fiche</button>'+
           '<button class="btn suc sm" id="m_sav">Enregistrer les modifications</button>'+
         '</div>';
 
-      openModal('Fiche Étudiant : '+st.firstName+' '+st.lastName, html);
+      openModal('Fiche Candidat : '+st.firstName+' '+st.lastName, html);
 
       document.getElementById('m_btnlog').addEventListener('click', function(){
         var txt = val('m_addlog'); if(!txt) return;
@@ -1272,11 +1288,11 @@ function renderAdmin(){
     if(fv.mode==='sublist'){
       var list=STATE.students.filter(function(s){return s.specialite===fv.spec && s.status !== 'Refusé';});
       main.innerHTML=
-        '<div class="head"><div><h2>Dossier Spécialité : '+esc(fv.spec)+'</h2></div>'+
+        '<div class="head"><div><h2>Filière : '+esc(fv.spec)+'</h2></div>'+
         '<button class="btn sm" id="bkSpec">← Retour aux dossiers</button></div>'+
         '<div class="lst">'+list.map(function(s){
           return '<div class="row" data-openst="'+esc(s.id)+'"><div class="row-m"><div class="rn">'+esc(s.firstName)+' '+esc(s.lastName)+'</div><div class="rm">✉️ '+esc(s.email||'N/C')+' · 📞 '+esc(s.phone||'N/C')+'</div></div>'+statusChip(s.status)+'</div>';
-        }).join('')+(list.length?'':'<p class="rm" style="padding:20px;">Aucun étudiant inscrit dans cette filière.</p>')+'</div>';
+        }).join('')+(list.length?'':'<p class="rm" style="padding:20px;">Aucun étudiant dans cette filière.</p>')+'</div>';
 
       document.getElementById('bkSpec').addEventListener('click',function(){fv.mode='root';rStudentFolders(main);});
       Array.prototype.forEach.call(document.querySelectorAll('[data-openst]'),function(r){
@@ -1310,22 +1326,22 @@ function renderAdmin(){
     var rncpDb = getRncpDatabase();
 
     main.innerHTML = 
-      '<div class="head"><h2>Vérificateur d\'Éligibilité Missions / RNCP</h2><p class="head-sub">Analyse détaillée de l\'offre par rapport aux blocs officiels du diplôme</p></div>'+
+      '<div class="head"><h2>Vérificateur d\'Éligibilité Missions / RNCP</h2><p class="head-sub">Analyse de la fiche de poste selon les référentiels RNCP</p></div>'+
       '<div class="card">'+
         '<div class="fgrid">'+
-          '<div class="fgroup"><label>Spécialisation / Parcours :</label>'+
-            '<select id="rncpSpecSelect"><option value="">-- Sélectionnez une spécialisation --</option>'+
+          '<div class="fgroup"><label>Spécialisation :</label>'+
+            '<select id="rncpSpecSelect"><option value="">-- Sélectionner une spécialisation --</option>'+
               Object.keys(rncpDb).map(function(k){
                 return '<option value="'+k+'">'+esc(rncpDb[k].name)+' ('+esc(rncpDb[k].rncp)+')</option>';
               }).join('')+
             '</select>'+
           '</div>'+
           '<div class="fgroup"><label>Titre RNCP associé :</label><input id="rncpTitleDisp" readonly style="background:#f1f5f9;"></div>'+
-          '<div class="fgroup full" style="grid-column: span 2;"><label>Missions de l\'offre :</label>'+
-            '<textarea id="rncpMissionsText" placeholder="Collez le texte des missions à valider..." style="height:120px;"></textarea>'+
+          '<div class="fgroup full" style="grid-column: span 2;"><label>Missions prévues :</label>'+
+            '<textarea id="rncpMissionsText" placeholder="Coller les missions proposées..." style="height:120px;"></textarea>'+
           '</div>'+
         '</div>'+
-        '<button class="btn prim" id="btnAnalyzeRNCP" style="margin-top:12px;">Analyser la conformité aux blocs RNCP</button>'+
+        '<button class="btn prim" id="btnAnalyzeRNCP" style="margin-top:12px;">Évaluer l\'éligibilité RNCP</button>'+
       '</div>'+
       '<div id="rncpResults"></div>';
 
@@ -1343,10 +1359,10 @@ function renderAdmin(){
       var missionsText = val('rncpMissionsText').toLowerCase();
 
       if(!specKey || !rncpDb[specKey]){ alert("Veuillez sélectionner une spécialisation."); return; }
-      if(!missionsText){ alert("Veuillez coller le texte des missions."); return; }
+      if(!missionsText){ alert("Veuillez renseigner le texte des missions."); return; }
 
       var program = rncpDb[specKey];
-      var html = '<div class="card"><h3>Rapport de Conformité — ' + esc(program.name) + ' (' + esc(program.rncp) + ')</h3></div>';
+      var html = '<div class="card"><h3>Évaluation d\'Éligibilité — ' + esc(program.name) + ' (' + esc(program.rncp) + ')</h3></div>';
 
       (program.blocs||[]).forEach(function(bloc){
         var matchedKeywords = (bloc.keywords||[]).filter(function(kw){ return missionsText.includes(kw); });
@@ -1356,16 +1372,66 @@ function renderAdmin(){
           '<div class="block-card ' + (isValid ? 'valid' : 'invalid') + '">'+
             '<div style="display:flex; justify-content:space-between; align-items:center;">'+
               '<strong>' + esc(bloc.id) + ' : ' + esc(bloc.label) + '</strong>'+
-              '<span class="chip ' + (isValid ? 'ch-gr' : 'ch-re') + '">' + (isValid ? 'Bloc Couvert' : 'Avertissement : Non identifié') + '</span>'+
+              '<span class="chip ' + (isValid ? 'ch-gr' : 'ch-re') + '">' + (isValid ? 'Bloc Validé' : 'Points d\'attention') + '</span>'+
             '</div>'+
             '<p style="margin-top:6px; font-size:12px; color:var(--tx);">' + esc(bloc.details||'') + '</p>'+
             '<p style="margin-top:8px; font-size:12.5px; color:var(--mu);">'+
-              (isValid ? 'Mots-clés repérés : <b>' + matchedKeywords.join(', ') + '</b>' : 'Aucun mot-clé explicite trouvé pour ce bloc dans le texte transmitted.')+
+              (isValid ? 'Mots-clés identifiés : <b>' + matchedKeywords.join(', ') + '</b>' : 'Aucune correspondance explicite trouvée pour ce bloc.')+
             '</p>'+
           '</div>';
       });
 
       document.getElementById('rncpResults').innerHTML = html;
+    });
+  }
+
+  function generateAIEmailToRecruiter(recName, offTitle, selectedSts){
+    var apiKey = getApiKey();
+    var salutation = formatRecruiterSalutation(recName);
+
+    if(!apiKey){
+      var defaultText = salutation + "\n\n" +
+        "Je fais suite à nos récents échanges concernant votre recherche d'alternant pour le poste de " + (offTitle || "votre offre d'emploi") + ".\n\n" +
+        "J'ai le plaisir de vous partager les profils sélectionnées qui correspondent particulièrement à vos critères de recherche :\n\n";
+      selectedSts.forEach(function(st){
+        defaultText += st.firstName + " " + st.lastName + " — Spécialité : " + st.specialite + "\n";
+        defaultText += "Profil réactif possédant des compétences solides. Ses différentes expériences acquises sur le terrain lui permettent de s'adapter rapidement aux enjeux opérationnels de votre entreprise.\n\n";
+      });
+      defaultText += "Vous trouverez leurs CVs joints à ce courriel pour étude.\n\nJe reste à votre entière disposition pour organiser un entretien à votre convenance.\n\nCordialement,";
+      return Promise.resolve(defaultText);
+    }
+
+    var candSummary = selectedSts.map(function(s){
+      return "CANDIDAT: " + s.firstName + " " + s.lastName + "\nSpécialité: " + s.specialite + "\nRésumé du parcours & compétences: " + (s.skills || s.rawText || "INSEEC Bachelor");
+    }).join("\n\n");
+
+    var prompt = "Tu es Chargé des Relations Entreprises au Bureau des Carrières INSEEC Bachelor.\n" +
+                 "Rédige un courriel de transmission de candidatures d'une qualité d'écriture irréprochable, aéré et fluide.\n\n" +
+                 "DONNÉES DE L'OFFRE ET CANDIDATS :\n" +
+                 "- Salutation exacte à utiliser impérativement : '" + salutation + "'\n" +
+                 "- Posté visé : " + (offTitle || "Offre d'alternance") + "\n" +
+                 "- Candidats sélectionnés :\n" + candSummary + "\n\n" +
+                 "EXIGENCES STRICTES DE RÉDACTION :\n" +
+                 "1. Aucun symbole Markdown (pas de **, pas de ***, pas de #).\n" +
+                 "2. AÈRE AU MAXIMUM LE COURRIEL : Insère un saut de ligne clair entre chaque paragraphe.\n" +
+                 "3. Premier paragraphe : Remercie pour l'échange ou la confiance et rappelle explicitement l'intitulé de l'offre.\n" +
+                 "4. Pour chaque candidat : Dédie un paragraphe clair de 2 à 3 lignes. Présente le profil en mettant en valeur ce qui est LE PLUS PERTINENT pour le poste (soit une expérience marquante, soit la maîtrise d'outils, soit les compétences d'adaptation) sans lister bêtement de simples mots-clés.\n" +
+                 "5. Dernier paragraphe : Rappelle que les CVs sont joints au mail et propose de convenir d'un rendez-vous d'entretien.\n" +
+                 "6. Termine STRICTEMENT par 'Cordialement,' SANS RAJOUTER de signature ou de nom d'institution à la fin.\n\n" +
+                 "Renvoie uniquement le texte brut du mail.";
+
+    return fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
+      body: JSON.stringify({
+        model: "gpt-4o",
+        max_tokens: 1800,
+        messages: [{ role: "user", content: prompt }]
+      })
+    }).then(function(r){ return r.json(); }).then(function(d){
+      return cleanTextFormatting(d.choices[0].message.content);
+    }).catch(function(){
+      return salutation + "\n\nVeuillez trouver ci-joint les CVs des candidats sélectionnés.\n\nCordialement,";
     });
   }
 
@@ -1375,11 +1441,11 @@ function renderAdmin(){
     var pendingOffers = STATE.offers.filter(function(o){ return o.status === 'À traiter'; });
 
     main.innerHTML=
-      '<div class="head"><h2>Matching de Candidatures</h2><p class="head-sub">Analyse poussée d\'adéquation et envoi groupé</p></div>'+
+      '<div class="head"><h2>Matching de Candidatures</h2><p class="head-sub">Analyse poussée d\'adéquation et transmission groupée</p></div>'+
       '<div class="card">'+
-        '<h3>1. Offre de référence ('+pendingOffers.length+' disponible(s))</h3>'+
+        '<h3>1. Sélection de l\'offre ('+pendingOffers.length+' disponible(s))</h3>'+
         '<div class="fgrid">'+
-          '<div class="fgroup"><label>Sélectionner une offre "À traiter"</label>'+
+          '<div class="fgroup"><label>Offre de référence</label>'+
             '<select id="mOfferSelect"><option value="">-- Choisir une offre --</option>'+
               pendingOffers.map(function(o){ return '<option value="'+o.id+'">'+esc(o.title)+' ('+esc(o.companyName)+')</option>'; }).join('')+
             '</select>'+
@@ -1387,7 +1453,7 @@ function renderAdmin(){
           '<div class="fgroup"><label>Ou importer la fiche en PDF</label><input type="file" id="mOfferPdfFile" accept="application/pdf"></div>'+
           '<div class="fgroup full" style="grid-column: span 2;"><label>Contenu de l\'offre</label><textarea id="mOfferText" placeholder="Texte de l\'offre..." style="height:70px;"></textarea></div>'+
         '</div>'+
-        '<h3 style="margin-top:14px;">2. Filtres candidats (Sélection multiple)</h3>'+
+        '<h3 style="margin-top:14px;">2. Filtres candidats</h3>'+
         '<div style="margin-bottom:12px;">'+
           '<label style="font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;">Spécialités :</label>'+
           '<div class="check-group" id="mSpecChecks">'+
@@ -1397,14 +1463,14 @@ function renderAdmin(){
           '</div>'+
         '</div>'+
         '<div style="margin-bottom:16px;">'+
-          '<label style="font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;">Statuts candidats :</label>'+
+          '<label style="font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;">Statuts :</label>'+
           '<div class="check-group" id="mStatusChecks">'+
             statuses.map(function(st){
               return '<label class="check-item"><input type="checkbox" value="'+esc(st)+'" '+(st==='Actif'||st==='En recherche'||st==='Peu actif'?'checked':'')+'> '+esc(st)+'</label>';
             }).join('')+
           '</div>'+
         '</div>'+
-        '<button class="btn prim" id="runMatchBtn">🚀 Lancer l\'évaluation approfondie (IA Puissance Max)</button>'+
+        '<button class="btn prim" id="runMatchBtn">🚀 Lancer l\'analyse d\'adéquation (GPT-4o)</button>'+
         '<div id="mStatus" style="margin-top:12px;font-weight:700;color:var(--pu);"></div>'+
       '</div>'+
       '<div id="mResults"></div>';
@@ -1442,7 +1508,7 @@ function renderAdmin(){
       if(eligible.length === 0){ alert("Aucun étudiant ne correspond aux filtres cochés."); return; }
 
       var statusEl = document.getElementById('mStatus');
-      statusEl.textContent = 'Évaluation approfondie de ' + eligible.length + ' candidat(s) en cours...';
+      statusEl.textContent = 'Évaluation approfondie de ' + eligible.length + ' candidat(s) en cours avec GPT-4o...';
 
       var promises = eligible.map(function(s){
         return callAIMatchingDetailed(s.rawText || (s.firstName + ' ' + s.lastName + ' ' + s.skills), offerText)
@@ -1457,7 +1523,7 @@ function renderAdmin(){
 
         var html = 
           '<div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">'+
-            '<h3>🏆 Classement des Candidats (' + results.length + ')</h3>'+
+            '<h3>Classement des Candidats (' + results.length + ')</h3>'+
             '<button class="btn suc" id="btnTransmitSelected">✉️ Transmettre les candidats cochés au recruteur</button>'+
           '</div><div class="lst">';
 
@@ -1483,21 +1549,21 @@ function renderAdmin(){
               
               '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;">'+
                 '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px;font-size:12.5px;">'+
-                  '<b style="color:#166534;display:block;margin-bottom:6px;">🎯 Points Forts / Adéquations :</b>'+
-                  '<ul style="padding-left:16px;color:#15803d;line-height:1.4;">'+
-                    item.positives.map(function(p){ return '<li>'+esc(p)+'</li>'; }).join('')+
+                  '<b style="color:#166534;display:block;margin-bottom:6px;">Points forts du profil (' + item.positives.length + ') :</b>'+
+                  '<ul style="padding-left:16px;color:#15803d;line-height:1.5;">'+
+                    item.positives.map(function(p){ return '<li style="margin-bottom:4px;">'+esc(p)+'</li>'; }).join('')+
                   '</ul>'+
                 '</div>'+
                 '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:12px;font-size:12.5px;">'+
-                  '<b style="color:#991b1b;display:block;margin-bottom:6px;">⚠️ Points de Vigilance / Lacunes :</b>'+
-                  '<ul style="padding-left:16px;color:#b91c1c;line-height:1.4;">'+
-                    item.negatives.map(function(n){ return '<li>'+esc(n)+'</li>'; }).join('')+
+                  '<b style="color:#991b1b;display:block;margin-bottom:6px;">Points d\'attention (' + item.negatives.length + ') :</b>'+
+                  '<ul style="padding-left:16px;color:#b91c1c;line-height:1.5;">'+
+                    item.negatives.map(function(n){ return '<li style="margin-bottom:4px;">'+esc(n)+'</li>'; }).join('')+
                   '</ul>'+
                 '</div>'+
               '</div>'+
 
-              '<div style="background:#f8fafc;border:1px solid var(--ln);border-radius:10px;padding:12px;margin-top:10px;font-size:13px;line-height:1.4;">'+
-                '<b>💡 Synthèse RH :</b> '+esc(item.verdict)+
+              '<div style="background:#f8fafc;border:1px solid var(--ln);border-radius:10px;padding:12px;margin-top:10px;font-size:13px;line-height:1.5;">'+
+                '<b>Analyse synthétique :</b> '+esc(item.verdict)+
               '</div>'+
 
               '<div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;border-top:1px solid var(--ln);padding-top:10px;">'+
@@ -1526,19 +1592,12 @@ function renderAdmin(){
           var selectedSts = STATE.students.filter(function(s){ return selectedIds.indexOf(s.id) !== -1; });
 
           var recEmail = currentOfferObj ? (currentOfferObj.contactEmail||'') : '';
-          var recName = currentOfferObj ? (currentOfferObj.contactName||'Recruteur') : 'Recruteur';
+          var recName = currentOfferObj ? (currentOfferObj.contactName||'') : '';
           var offTitle = currentOfferObj ? currentOfferObj.title : 'votre offre d\'alternance';
 
-          var emailLines = "Bonjour " + recName + ",\n\n" +
-            "Suite à notre échange concernant le poste de " + offTitle + ", le Bureau des Carrières INSEEC Bachelor a le plaisir de vous transmettre une sélection de profils qualifiés correspondant à vos exigences :\n\n";
-
           var pdfDownloadLinks = [];
-
           for(var i = 0; i < selectedSts.length; i++){
             var st = selectedSts[i];
-            emailLines += "• " + st.firstName + " " + st.lastName + " — Spécialité : " + st.specialite + "\n";
-            emailLines += "  Compétences clés : " + cleanTextFormatting(st.skills||'Étudiant INSEEC Bachelor') + "\n\n";
-
             var activeKey = st.activeCv === 'cv2' ? st.id + '_cv2' : (st.activeCv === 'portfolio' ? st.id + '_port' : st.id + '_cv1');
             var pdfData = await getPdfBlob(activeKey);
             if(pdfData){
@@ -1546,22 +1605,22 @@ function renderAdmin(){
             }
           }
 
-          emailLines += "Vous trouverez leurs CVs ci-joints. Nous restons à votre entière disposition pour planifier un premier échange.\n\nBien cordialement,\nBureau des Carrières INSEEC Bachelor";
+          var emailTextGenerated = await generateAIEmailToRecruiter(recName, offTitle, selectedSts);
 
           var linksHtml = pdfDownloadLinks.map(function(link){
-            return '<a href="'+link.data+'" download="'+link.name+'" class="btn sm prim" style="margin-right:8px;margin-bottom:8px;">📥 Télécharger '+link.name+' (à glisser dans Outlook)</a>';
+            return '<a href="'+link.data+'" download="'+link.name+'" class="btn sm prim" style="margin-right:8px;margin-bottom:8px;">📥 Télécharger '+link.name+' (à joindre dans Outlook)</a>';
           }).join('');
 
           var mHtml = 
             '<div class="card">'+
               '<h3>1. Télécharger les pièces jointes (CVs en PDF)</h3>'+
-              '<p style="font-size:12px;color:var(--mu);margin-bottom:8px;">Cliquez pour télécharger le(s) CV(s) puis glissez-le(s) dans votre mail Outlook :</p>'+
+              '<p style="font-size:12px;color:var(--mu);margin-bottom:8px;">Téléchargez les CVs ci-dessous pour les ajouter à votre courriel Outlook :</p>'+
               '<div style="margin-bottom:14px;">'+(linksHtml || '<p class="rm">Aucun PDF trouvé.</p>')+'</div>'+
-              '<h3>2. Contenu du mail pré-rédigé</h3>'+
+              '<h3>2. Courriel d\'accompagnement pré-rédigé (GPT-4o)</h3>'+
               '<div style="margin-bottom:10px;"><label style="font-weight:700;">Destinataire :</label> <input id="recEmailInput" value="'+esc(recEmail)+'" style="width:100%;padding:8px;border:1px solid var(--ln);border-radius:6px;"></div>'+
-              '<textarea id="recMailText" style="width:100%;height:200px;border:1px solid var(--ln);border-radius:9px;padding:12px;font-size:13px;line-height:1.5;">'+esc(emailLines)+'</textarea>'+
+              '<textarea id="recMailText" style="width:100%;height:260px;border:1px solid var(--ln);border-radius:9px;padding:12px;font-size:13px;line-height:1.6;">'+esc(emailTextGenerated)+'</textarea>'+
               '<div style="margin-top:14px;display:flex;justify-content:flex-end;">'+
-                '<button class="btn suc sm" id="btnConfirmSendRec">Ouvrir Outlook & Consigner dans l\'Historique</button>'+
+                '<button class="btn suc sm" id="btnConfirmSendRec">Ouvrir Outlook & Valider la transmission</button>'+
               '</div>'+
             '</div>';
 
@@ -1652,7 +1711,7 @@ function renderAdmin(){
           '<div class="fgroup"><label>Statut de traitement</label><select id="mo_st">'+OFFER_STATUSES.map(function(s){return'<option'+(of.status===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select></div>'+
           '<div class="fgroup full" style="grid-column: span 2;"><label>Fiche de poste (PDF)</label><input type="file" id="mo_pdf_in" accept="application/pdf"></div>'+
         '</div>'+
-        '<div class="card" style="margin-top:10px;"><h3>Aperçu du PDF</h3>'+pdfSection+'</div>'+
+        '<div class="card" style="margin-top:10px;"><h3>Aperçu du document</h3>'+pdfSection+'</div>'+
         '<div style="display:flex;justify-content:space-between;margin-top:16px;">'+
           '<button class="btn dan sm" id="mo_del">Supprimer</button>'+
           '<button class="btn suc sm" id="mo_sav">Enregistrer</button>'+
@@ -1699,7 +1758,7 @@ function renderAdmin(){
     var pendingOffers = STATE.offers.filter(function(o){ return o.status === 'À traiter'; });
 
     main.innerHTML = 
-      '<div class="head"><h2>Optimisation ATS & Analyse</h2><p class="head-sub">Sélection parmi les offres "À traiter"</p></div>'+
+      '<div class="head"><h2>Optimisation ATS & Analyse</h2><p class="head-sub">Sélection parmi les offres enregistrées</p></div>'+
       '<div class="card">'+
         '<h3>1. Fiche de Poste de référence ('+pendingOffers.length+' disponible(s))</h3>'+
         '<div class="fgrid">'+
@@ -1711,7 +1770,7 @@ function renderAdmin(){
           '<div class="fgroup"><label>Ou importer la fiche en PDF</label><input type="file" id="anOfferPdfFile" accept="application/pdf"></div>'+
           '<div class="fgroup full" style="grid-column: span 2;"><label>Contenu de l\'offre</label><textarea id="anOfferText" placeholder="Texte de la fiche de poste..." style="height:70px;"></textarea></div>'+
         '</div>'+
-        '<h3 style="margin-top:16px;">2. CV de l\'étudiant</h3>'+
+        '<h3 style="margin-top:16px;">2. CV du candidat</h3>'+
         '<div class="fgroup"><label>Charger le PDF du CV *</label><input type="file" id="anCvFile" accept="application/pdf"></div>'+
       '</div>'+
       '<div class="tab-nav">'+
@@ -1750,10 +1809,10 @@ function renderAdmin(){
     function renderMode1(){
       document.getElementById('anOutputBox').innerHTML = 
         '<div class="card">'+
-          '<h3>Diagnostic et analyse d\'adéquation</h3>'+
-          '<button class="btn prim" id="btnRunDiag">Lancer l\'analyse (Double Puissance IA)</button>'+
+          '<h3>Diagnostic d\'adéquation</h3>'+
+          '<button class="btn prim" id="btnRunDiag">Lancer l\'analyse (GPT-4o)</button>'+
           '<div id="diagResultBox" style="margin-top:16px;display:none;">'+
-            '<textarea id="diagText" style="width:100%;height:380px;border:1px solid var(--ln);border-radius:9px;padding:12px;font-size:13px;outline:none;line-height:1.5;"></textarea>'+
+            '<textarea id="diagText" style="width:100%;height:380px;border:1px solid var(--ln);border-radius:9px;padding:12px;font-size:13px;outline:none;line-height:1.6;"></textarea>'+
             '<button class="btn sm prim" id="btnDlDiag" style="margin-top:10px;">Exporter le rapport (.txt)</button>'+
           '</div>'+
         '</div>';
@@ -1764,15 +1823,15 @@ function renderAdmin(){
         if(!cvFile && !currentCvText){ alert("Veuillez fournir le CV en PDF."); return; }
 
         var btn = this;
-        btn.textContent = 'Analyse approfondie en cours...';
+        btn.textContent = 'Analyse par GPT-4o en cours...';
 
         var p = cvFile ? extractPdfText(cvFile) : Promise.resolve(currentCvText);
         p.then(function(txt){
           currentCvText = txt;
-          return callAIDeepAuditCV(txt, offText);
+          return callAIDeepAuditCV(txt, "Étudiant", offText);
         }).then(function(resObj){
           document.getElementById('diagResultBox').style.display = 'block';
-          document.getElementById('diagText').value = "--- ANALYSE INTERNE RH DÉTAILLÉE ---\n\n" + (resObj.internalAnalysis||'') + "\n\n--- MAIL RECOMMANDATIONS ÉTUDIANT ---\n\n" + (resObj.studentEmail||'');
+          document.getElementById('diagText').value = "--- EVALUATION RH INTERNE ---\n\n" + (resObj.internalAnalysis||'') + "\n\n--- COURRIEL DE RECOMMANDATIONS ---\n\n" + (resObj.studentEmail||'');
         }).finally(function(){ btn.textContent = 'Relancer l\'analyse'; });
       });
 
@@ -1787,11 +1846,11 @@ function renderAdmin(){
     function renderMode2(){
       document.getElementById('anOutputBox').innerHTML = 
         '<div class="card">'+
-          '<h3>Génération du CV PDF réorganisé (Chronologie Inverse Strictly Respectée)</h3>'+
-          '<button class="btn prim" id="btnGenOptPdf">Générer le document PDF</button>'+
+          '<h3>Génération du CV réorganisé (Remplissage A4 dynamique)</h3>'+
+          '<button class="btn prim" id="btnGenOptPdf">Générer le document PDF (GPT-4o)</button>'+
           '<div id="optPdfBox" style="margin-top:16px;display:none;">'+
             '<div style="background:#f8fafc;padding:14px;border-radius:10px;border:1px solid var(--ln);font-size:13px;margin-bottom:12px;" id="optPreviewText"></div>'+
-            '<button class="btn suc" id="btnDownloadOptPdf">Télécharger le CV (PDF)</button>'+
+            '<button class="btn suc" id="btnDownloadOptPdf">Télécharger le CV (PDF A4 Complet)</button>'+
           '</div>'+
         '</div>';
 
@@ -1803,7 +1862,7 @@ function renderAdmin(){
         if(!cvFile && !currentCvText){ alert("Veuillez charger le fichier PDF du CV."); return; }
 
         var btn = this;
-        btn.textContent = 'Traitement de haute précision...';
+        btn.textContent = 'Traitement par GPT-4o en cours...';
 
         var p = cvFile ? extractPdfText(cvFile) : Promise.resolve(currentCvText);
         p.then(function(txt){
@@ -1814,8 +1873,8 @@ function renderAdmin(){
           document.getElementById('optPdfBox').style.display = 'block';
           document.getElementById('optPreviewText').innerHTML = 
             '<b>Candidat :</b> ' + esc(optData.fullName) + '<br>' +
-            '<b>Titre :</b> ' + esc(optData.title) + '<br>' +
-            '<b>Savoir-faire :</b> ' + esc((optData.hardSkills||[]).join(' · '));
+            '<b>Intitulé optimisé :</b> ' + esc(optData.title) + '<br>' +
+            '<b>Compétences ATS :</b> ' + esc((optData.hardSkills||[]).join(' · '));
         }).finally(function(){ btn.textContent = 'Régénérer le document'; });
       });
 
@@ -1837,42 +1896,49 @@ function renderAdmin(){
 
     var margin = 14;
     var pageWidth = 210;
+    var pageHeight = 297;
     var contentWidth = pageWidth - (margin * 2);
 
-    var totalDetails = (data.experiences || []).reduce(function(acc, x){
-      return acc + (Array.isArray(x.details) ? x.details.length : 1);
-    }, 0);
+    // Calcul de la densité pour équilibrer la mise en page sur toute la hauteur A4
+    var totalLines = 0;
+    (data.experiences || []).forEach(function(x){
+      totalLines += (Array.isArray(x.details) ? x.details.length : 1);
+    });
+    (data.education || []).forEach(function(){ totalLines += 1; });
 
-    var baseFontSize = totalDetails > 14 ? 9 : 10;
-    var lineGap = totalDetails > 14 ? 4.2 : 5.2;
-    var sectionGap = totalDetails > 14 ? 7 : 10;
+    var baseFontSize = totalLines <= 6 ? 10.5 : (totalLines <= 10 ? 9.5 : 8.8);
+    var lineGap = totalLines <= 6 ? 6.5 : (totalLines <= 10 ? 5.2 : 4.2);
+    var sectionGap = totalLines <= 6 ? 14 : (totalLines <= 10 ? 10 : 7);
 
-    var y = 18;
+    var y = 16;
 
+    // En-tête
     doc.setFont("Helvetica", "bold");
-    doc.setFontSize(22);
+    doc.setFontSize(totalLines <= 6 ? 22 : 20);
     doc.setTextColor(15, 23, 42);
     doc.text((data.fullName || "Candidat").toUpperCase(), margin, y);
     y += 6;
 
     doc.setFont("Helvetica", "normal");
-    doc.setFontSize(9.5);
+    doc.setFontSize(9);
     doc.setTextColor(100, 116, 139);
-    doc.text(data.contact || "Téléphone | Email | Adresse", margin, y);
-    y += 6;
+    doc.text(cleanTextFormatting(data.contact || ""), margin, y);
+    y += 5;
 
     doc.setDrawColor(203, 213, 225);
     doc.setLineWidth(0.6);
     doc.line(margin, y, pageWidth - margin, y);
-    y += 8;
+    y += 7;
 
+    // Titre du poste
     doc.setFont("Helvetica", "bold");
-    doc.setFontSize(13);
+    doc.setFontSize(12.5);
     doc.setTextColor(30, 58, 138);
     var splitTitle = doc.splitTextToSize((data.title || "PROFIL PROFESSIONNEL").toUpperCase(), contentWidth);
     doc.text(splitTitle, margin, y);
-    y += (splitTitle.length * 5.5) + 3;
+    y += (splitTitle.length * 5) + 3;
 
+    // Accroche
     doc.setFont("Helvetica", "normal");
     doc.setFontSize(baseFontSize);
     doc.setTextColor(30, 41, 59);
@@ -1882,27 +1948,28 @@ function renderAdmin(){
 
     function renderSectionTitle(titleText){
       doc.setFont("Helvetica", "bold");
-      doc.setFontSize(12.5);
+      doc.setFontSize(11.5);
       doc.setTextColor(15, 23, 42);
       doc.text(titleText.toUpperCase(), margin, y);
-      y += 2.5;
+      y += 2;
       doc.setDrawColor(30, 58, 138);
       doc.setLineWidth(0.8);
-      doc.line(margin, y, margin + 70, y);
-      y += 6;
+      doc.line(margin, y, margin + 60, y);
+      y += 5.5;
     }
 
+    // Expériences
     renderSectionTitle("Expériences Professionnelles");
 
     (data.experiences || []).forEach(function(exp){
       doc.setFont("Helvetica", "bold");
       doc.setFontSize(baseFontSize + 0.5);
       doc.setTextColor(15, 23, 42);
-      doc.text(exp.role || "Poste", margin, y);
+      doc.text(cleanTextFormatting(exp.role || "Poste"), margin, y);
 
       doc.setFont("Helvetica", "bold");
       doc.setTextColor(100, 116, 139);
-      var rightText = (exp.company || "") + " | " + (exp.period || "");
+      var rightText = cleanTextFormatting((exp.company || "") + (exp.period ? " | " + exp.period : ""));
       doc.text(rightText, pageWidth - margin - doc.getTextWidth(rightText), y);
       y += 4.5;
 
@@ -1916,37 +1983,42 @@ function renderAdmin(){
         doc.text(splitDet, margin + 4, y);
         y += (splitDet.length * lineGap);
       });
-      y += 3.5;
+      y += 3;
     });
 
-    y += sectionGap - 3;
+    y += sectionGap - 2;
 
+    // Formations
     if(data.education && data.education.length){
-      renderSectionTitle("Formations & Diplômes");
+      renderSectionTitle("Formations & Cursus");
 
       data.education.forEach(function(edu){
         doc.setFont("Helvetica", "bold");
         doc.setFontSize(baseFontSize + 0.5);
         doc.setTextColor(15, 23, 42);
-        doc.text(edu.degree || "Diplôme", margin, y);
+        doc.text(cleanTextFormatting(edu.degree || "Diplôme"), margin, y);
 
         doc.setFont("Helvetica", "normal");
         doc.setTextColor(100, 116, 139);
-        var edRight = (edu.school || "") + " (" + (edu.period || "") + ")";
+        var edRight = cleanTextFormatting((edu.school || "") + (edu.period ? " (" + edu.period + ")" : ""));
         doc.text(edRight, pageWidth - margin - doc.getTextWidth(edRight), y);
         y += lineGap + 1.5;
       });
-      y += sectionGap - 3;
+      y += sectionGap - 2;
     }
 
-    renderSectionTitle("Compétences & Langues");
+    // Compétences, Langues & Centres d'intérêt
+    renderSectionTitle("Compétences, Langues & Intérêts");
 
     doc.setFont("Helvetica", "normal");
     doc.setFontSize(baseFontSize);
-    var hSkills = "• Savoir-faire : " + (data.hardSkills || []).map(cleanTextFormatting).join("  •  ");
-    var splitHard = doc.splitTextToSize(hSkills, contentWidth);
-    doc.text(splitHard, margin, y);
-    y += (splitHard.length * lineGap) + 1.5;
+
+    if(data.hardSkills && data.hardSkills.length){
+      var hSkills = "• Savoir-faire & Logiciels ATS : " + (data.hardSkills || []).map(cleanTextFormatting).join("  •  ");
+      var splitHard = doc.splitTextToSize(hSkills, contentWidth);
+      doc.text(splitHard, margin, y);
+      y += (splitHard.length * lineGap) + 1.5;
+    }
 
     if(data.softSkills && data.softSkills.length){
       var sSkills = "• Savoir-être : " + (data.softSkills || []).map(cleanTextFormatting).join("  •  ");
@@ -1956,7 +2028,16 @@ function renderAdmin(){
     }
 
     if(data.languages){
-      doc.text("• Langues : " + cleanTextFormatting(data.languages), margin, y);
+      var lSkills = "• Langues : " + cleanTextFormatting(data.languages);
+      var splitLang = doc.splitTextToSize(lSkills, contentWidth);
+      doc.text(splitLang, margin, y);
+      y += (splitLang.length * lineGap) + 1.5;
+    }
+
+    if(data.interests){
+      var iSkills = "• Centres d'intérêt & Engagement : " + cleanTextFormatting(data.interests);
+      var splitInt = doc.splitTextToSize(iSkills, contentWidth);
+      doc.text(splitInt, margin, y);
     }
 
     doc.save("CV_" + (data.fullName||"Candidat").replace(/\s+/g,'_') + ".pdf");
@@ -2010,7 +2091,7 @@ function renderAdmin(){
       '</div>'+
       '<div class="card">'+
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">'+
-          '<h3>Gestion des Spécialisations & Blocs de Compétences RNCP</h3>'+
+          '<h3>Gestion des Spécialisations & Blocs RNCP</h3>'+
           '<button class="btn sm suc" id="btnAddSpecModal">+ Nouvelle Spécialisation</button>'+
         '</div>'+
         '<div class="lst">'+
@@ -2181,7 +2262,7 @@ function renderAdmin(){
       '<div class="card"><h3>2. Lien Entreprise</h3>'+
         '<div style="background:#f1f5f9;padding:12px;border-radius:8px;font-family:monospace;font-size:13px;word-break:break-all;">'+companyLink+'</div>'+
         '<div style="margin-top:10px;display:flex;gap:10px;">'+
-          '<button class="btn sm prim" onclick="navigator.clipboard.writeText(\''+companyLink+'\');alert(\'Lien copié.\');">Copier le lien</button>'+
+          '<button class="btn sm prim" onclick="navigator.clipboard.writeText(\''+studentLink+'\');alert(\'Lien copié.\');">Copier le lien</button>'+
           '<a href="'+companyLink+'" target="_blank" class="btn sm">Ouvrir le formulaire ↗</a>'+
         '</div>'+
       '</div>';
