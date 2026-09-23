@@ -375,7 +375,7 @@ function parseCVWithAI(pdfText, fileName){
   var prompt = "Tu es un assistant RH d'élite. Extrais avec une précision absolue les données de ce CV :\n\n" +
                 "TEXTE DU CV :\n" + pdfText + "\n\n" +
                 "Liste des Spécialités valides : " + specsList + ".\n\n" +
-                "Format JSON strictement obligatoire :\n" +
+                "Format JSON strictly obligatoire :\n" +
                 "{\n" +
                 "  \"firstName\": \"Prénom de l'étudiant\",\n" +
                 "  \"lastName\": \"Nom de famille\",\n" +
@@ -1898,23 +1898,32 @@ function renderAdmin(){
     var pageWidth = 210;
     var pageHeight = 297;
     var contentWidth = pageWidth - (margin * 2);
+    var bottomMargin = 15;
 
-    // Calcul de la densité pour équilibrer la mise en page sur toute la hauteur A4
+    // Calcul dynamique de la taille de police et des espacements
     var totalLines = 0;
     (data.experiences || []).forEach(function(x){
       totalLines += (Array.isArray(x.details) ? x.details.length : 1);
     });
     (data.education || []).forEach(function(){ totalLines += 1; });
 
-    var baseFontSize = totalLines <= 6 ? 10.5 : (totalLines <= 10 ? 9.5 : 8.8);
-    var lineGap = totalLines <= 6 ? 6.5 : (totalLines <= 10 ? 5.2 : 4.2);
-    var sectionGap = totalLines <= 6 ? 14 : (totalLines <= 10 ? 10 : 7);
+    var baseFontSize = totalLines <= 6 ? 10 : (totalLines <= 10 ? 9 : 8.5);
+    var lineGap = totalLines <= 6 ? 5.5 : (totalLines <= 10 ? 4.8 : 4.0);
+    var sectionGap = totalLines <= 6 ? 10 : (totalLines <= 10 ? 8 : 6);
 
     var y = 16;
 
-    // En-tête
+    // Fonction interne de contrôle de bas de page
+    function checkPageBreak(neededHeight) {
+      if (y + neededHeight > pageHeight - bottomMargin) {
+        doc.addPage();
+        y = 16;
+      }
+    }
+
+    // 1. En-tête (Nom & Contact)
     doc.setFont("Helvetica", "bold");
-    doc.setFontSize(totalLines <= 6 ? 22 : 20);
+    doc.setFontSize(totalLines <= 6 ? 20 : 18);
     doc.setTextColor(15, 23, 42);
     doc.text((data.fullName || "Candidat").toUpperCase(), margin, y);
     y += 6;
@@ -1922,77 +1931,91 @@ function renderAdmin(){
     doc.setFont("Helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(100, 116, 139);
-    doc.text(cleanTextFormatting(data.contact || ""), margin, y);
-    y += 5;
+    var contactText = cleanTextFormatting(data.contact || "");
+    var splitContact = doc.splitTextToSize(contactText, contentWidth);
+    doc.text(splitContact, margin, y);
+    y += (splitContact.length * 4) + 2;
 
     doc.setDrawColor(203, 213, 225);
     doc.setLineWidth(0.6);
     doc.line(margin, y, pageWidth - margin, y);
-    y += 7;
+    y += 6;
 
-    // Titre du poste
+    // 2. Titre du poste
     doc.setFont("Helvetica", "bold");
-    doc.setFontSize(12.5);
+    doc.setFontSize(11.5);
     doc.setTextColor(30, 58, 138);
     var splitTitle = doc.splitTextToSize((data.title || "PROFIL PROFESSIONNEL").toUpperCase(), contentWidth);
+    checkPageBreak(splitTitle.length * 5);
     doc.text(splitTitle, margin, y);
-    y += (splitTitle.length * 5) + 3;
+    y += (splitTitle.length * 5) + 2;
 
-    // Accroche
-    doc.setFont("Helvetica", "normal");
-    doc.setFontSize(baseFontSize);
-    doc.setTextColor(30, 41, 59);
-    var splitSummary = doc.splitTextToSize(data.summary || "", contentWidth);
-    doc.text(splitSummary, margin, y);
-    y += (splitSummary.length * lineGap) + sectionGap;
+    // 3. Accroche / Résumé
+    if (data.summary) {
+      doc.setFont("Helvetica", "normal");
+      doc.setFontSize(baseFontSize);
+      doc.setTextColor(30, 41, 59);
+      var splitSummary = doc.splitTextToSize(cleanTextFormatting(data.summary), contentWidth);
+      checkPageBreak(splitSummary.length * lineGap);
+      doc.text(splitSummary, margin, y);
+      y += (splitSummary.length * lineGap) + sectionGap;
+    }
 
     function renderSectionTitle(titleText){
+      checkPageBreak(12);
       doc.setFont("Helvetica", "bold");
-      doc.setFontSize(11.5);
+      doc.setFontSize(11);
       doc.setTextColor(15, 23, 42);
       doc.text(titleText.toUpperCase(), margin, y);
       y += 2;
       doc.setDrawColor(30, 58, 138);
       doc.setLineWidth(0.8);
-      doc.line(margin, y, margin + 60, y);
-      y += 5.5;
+      doc.line(margin, y, margin + 50, y);
+      y += 5;
     }
 
-    // Expériences
-    renderSectionTitle("Expériences Professionnelles");
+    // 4. Expériences
+    if (data.experiences && data.experiences.length) {
+      renderSectionTitle("Expériences Professionnelles");
 
-    (data.experiences || []).forEach(function(exp){
-      doc.setFont("Helvetica", "bold");
-      doc.setFontSize(baseFontSize + 0.5);
-      doc.setTextColor(15, 23, 42);
-      doc.text(cleanTextFormatting(exp.role || "Poste"), margin, y);
+      data.experiences.forEach(function(exp){
+        checkPageBreak(10);
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(baseFontSize + 0.5);
+        doc.setTextColor(15, 23, 42);
+        
+        var roleTxt = cleanTextFormatting(exp.role || "Poste");
+        var compTxt = cleanTextFormatting((exp.company || "") + (exp.period ? " | " + exp.period : ""));
+        
+        doc.text(roleTxt, margin, y);
+        doc.setFont("Helvetica", "bold");
+        doc.setTextColor(100, 116, 139);
+        doc.text(compTxt, pageWidth - margin - doc.getTextWidth(compTxt), y);
+        y += 4.5;
 
-      doc.setFont("Helvetica", "bold");
-      doc.setTextColor(100, 116, 139);
-      var rightText = cleanTextFormatting((exp.company || "") + (exp.period ? " | " + exp.period : ""));
-      doc.text(rightText, pageWidth - margin - doc.getTextWidth(rightText), y);
-      y += 4.5;
-
-      doc.setTextColor(30, 41, 59);
-      doc.setFont("Helvetica", "normal");
-      doc.setFontSize(baseFontSize);
-      var detailsArr = Array.isArray(exp.details) ? exp.details : [exp.details];
-      detailsArr.forEach(function(det){
-        if(!det) return;
-        var splitDet = doc.splitTextToSize("• " + cleanTextFormatting(det), contentWidth - 4);
-        doc.text(splitDet, margin + 4, y);
-        y += (splitDet.length * lineGap);
+        doc.setTextColor(30, 41, 59);
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(baseFontSize);
+        
+        var detailsArr = Array.isArray(exp.details) ? exp.details : [exp.details];
+        detailsArr.forEach(function(det){
+          if(!det) return;
+          var splitDet = doc.splitTextToSize("• " + cleanTextFormatting(det), contentWidth - 4);
+          checkPageBreak(splitDet.length * lineGap);
+          doc.text(splitDet, margin + 4, y);
+          y += (splitDet.length * lineGap);
+        });
+        y += 2.5;
       });
-      y += 3;
-    });
+      y += sectionGap - 2;
+    }
 
-    y += sectionGap - 2;
-
-    // Formations
+    // 5. Formations
     if(data.education && data.education.length){
       renderSectionTitle("Formations & Cursus");
 
       data.education.forEach(function(edu){
+        checkPageBreak(8);
         doc.setFont("Helvetica", "bold");
         doc.setFontSize(baseFontSize + 0.5);
         doc.setTextColor(15, 23, 42);
@@ -2002,20 +2025,22 @@ function renderAdmin(){
         doc.setTextColor(100, 116, 139);
         var edRight = cleanTextFormatting((edu.school || "") + (edu.period ? " (" + edu.period + ")" : ""));
         doc.text(edRight, pageWidth - margin - doc.getTextWidth(edRight), y);
-        y += lineGap + 1.5;
+        y += lineGap + 1;
       });
       y += sectionGap - 2;
     }
 
-    // Compétences, Langues & Centres d'intérêt
+    // 6. Compétences & Informations complémentaires
     renderSectionTitle("Compétences, Langues & Intérêts");
 
     doc.setFont("Helvetica", "normal");
     doc.setFontSize(baseFontSize);
+    doc.setTextColor(30, 41, 59);
 
     if(data.hardSkills && data.hardSkills.length){
-      var hSkills = "• Savoir-faire & Logiciels ATS : " + (data.hardSkills || []).map(cleanTextFormatting).join("  •  ");
+      var hSkills = "• Savoir-faire & Logiciels : " + (data.hardSkills || []).map(cleanTextFormatting).join("  •  ");
       var splitHard = doc.splitTextToSize(hSkills, contentWidth);
+      checkPageBreak(splitHard.length * lineGap);
       doc.text(splitHard, margin, y);
       y += (splitHard.length * lineGap) + 1.5;
     }
@@ -2023,6 +2048,7 @@ function renderAdmin(){
     if(data.softSkills && data.softSkills.length){
       var sSkills = "• Savoir-être : " + (data.softSkills || []).map(cleanTextFormatting).join("  •  ");
       var splitSoft = doc.splitTextToSize(sSkills, contentWidth);
+      checkPageBreak(splitSoft.length * lineGap);
       doc.text(splitSoft, margin, y);
       y += (splitSoft.length * lineGap) + 1.5;
     }
@@ -2030,6 +2056,7 @@ function renderAdmin(){
     if(data.languages){
       var lSkills = "• Langues : " + cleanTextFormatting(data.languages);
       var splitLang = doc.splitTextToSize(lSkills, contentWidth);
+      checkPageBreak(splitLang.length * lineGap);
       doc.text(splitLang, margin, y);
       y += (splitLang.length * lineGap) + 1.5;
     }
@@ -2037,6 +2064,7 @@ function renderAdmin(){
     if(data.interests){
       var iSkills = "• Centres d'intérêt & Engagement : " + cleanTextFormatting(data.interests);
       var splitInt = doc.splitTextToSize(iSkills, contentWidth);
+      checkPageBreak(splitInt.length * lineGap);
       doc.text(splitInt, margin, y);
     }
 
@@ -2262,7 +2290,7 @@ function renderAdmin(){
       '<div class="card"><h3>2. Lien Entreprise</h3>'+
         '<div style="background:#f1f5f9;padding:12px;border-radius:8px;font-family:monospace;font-size:13px;word-break:break-all;">'+companyLink+'</div>'+
         '<div style="margin-top:10px;display:flex;gap:10px;">'+
-          '<button class="btn sm prim" onclick="navigator.clipboard.writeText(\''+studentLink+'\');alert(\'Lien copié.\');">Copier le lien</button>'+
+          '<button class="btn sm prim" onclick="navigator.clipboard.writeText(\''+companyLink+'\');alert(\'Lien copié.\');">Copier le lien</button>'+
           '<a href="'+companyLink+'" target="_blank" class="btn sm">Ouvrir le formulaire ↗</a>'+
         '</div>'+
       '</div>';
