@@ -109,8 +109,38 @@ a { color: inherit; text-decoration: none; }
 .fgroup input:focus, .fgroup select:focus, .fgroup textarea:focus { border-color: var(--bl); }
 
 .pdf-viewer { width: 100%; height: 480px; border: 1px solid var(--ln); border-radius: 12px; background: #525659; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
-.drop { border: 2px dashed #cbd5e1; border-radius: 14px; background: #f8fafc; padding: 36px 24px; text-align: center; color: var(--mu); font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.2s ease; }
-.drop:hover { background: #eff6ff; border-color: var(--bl); color: var(--bl); }
+
+/* Zone de dépôt ultra-compatible */
+.drop-zone-container {
+  position: relative;
+  border: 2px dashed #cbd5e1;
+  border-radius: 14px;
+  background: #f8fafc;
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--mu);
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.drop-zone-container:hover, .drop-zone-container.dragover {
+  background: #eff6ff;
+  border-color: var(--bl);
+  color: var(--bl);
+}
+.drop-zone-container input[type="file"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 10;
+}
 
 .log-item { background: #f8fafc; border: 1px solid var(--ln); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; font-size: 13.5px; }
 .log-d { font-size: 11px; font-weight: 700; color: var(--mu); margin-bottom: 4px; }
@@ -897,23 +927,42 @@ function renderAdmin(){
       '<div class="head"><h2>Importation de CVs</h2><p class="head-sub">Analyse intelligente par IA et placement automatique dans "À valider".</p></div>'+
       '<div class="card">'+
         '<h3>Dépôt de fichiers PDF / CV</h3>'+
-        '<div class="drop" id="cvDropZone">Glissez-déposez les fichiers PDF ici ou cliquez pour parcourir</div>'+
-        '<input type="file" id="cvFileInput" accept="application/pdf" multiple style="display:none;">'+
+        '<div class="drop-zone-container" id="cvDropBox">'+
+          '<span>Glissez-déposez les fichiers PDF ici ou cliquez pour parcourir</span>'+
+          '<input type="file" id="cvFileInput" accept="application/pdf" multiple>'+
+        '</div>'+
         '<div id="cvImportStatus" style="margin-top:12px;font-weight:700;color:var(--pu);"></div>'+
       '</div>';
 
-    var drop=document.getElementById('cvDropZone'), fileIn=document.getElementById('cvFileInput');
-    drop.addEventListener('click',function(){ fileIn.click(); });
-    fileIn.addEventListener('change',function(){ handleBatchCVs(fileIn.files); });
+    var dropBox = document.getElementById('cvDropBox');
+    var fileIn = document.getElementById('cvFileInput');
+
+    // Changement d'état visuel lors du survol de fichiers
+    fileIn.addEventListener('dragenter', function() { dropBox.classList.add('dragover'); });
+    fileIn.addEventListener('dragleave', function() { dropBox.classList.remove('dragover'); });
+    fileIn.addEventListener('drop', function() { dropBox.classList.remove('dragover'); });
+
+    // Déclenchement automatique dès que des fichiers sont déposés ou sélectionnés
+    fileIn.addEventListener('change', function(){
+      if (fileIn.files && fileIn.files.length > 0) {
+        handleBatchCVs(fileIn.files);
+      }
+    });
 
     async function handleBatchCVs(filesList){
-      var statusEl=document.getElementById('cvImportStatus');
-      var files = Array.from(filesList);
-      if(!files.length) return;
+      var statusEl = document.getElementById('cvImportStatus');
+      var files = Array.from(filesList).filter(function(f){
+        return f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf');
+      });
+
+      if(!files.length) {
+        alert("Veuillez déposer des fichiers au format PDF.");
+        return;
+      }
 
       var total = files.length;
 
-      for(var i=0; i<total; i++){
+      for(var i = 0; i < total; i++){
         var file = files[i];
         statusEl.textContent = 'Extraction GPT-4o & Remplissage (' + (i + 1) + '/' + total + ') : ' + file.name + '...';
 
